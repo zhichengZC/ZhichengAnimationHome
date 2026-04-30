@@ -1,0 +1,59 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="关于" description="关于纸橙和这间动画小屋。">
+  <section class="py-8 max-w-3xl mx-auto">
+    <div class="text-center mb-12 animate-fade-in-up">
+      <div class="text-7xl inline-block animate-float mb-4">🍊</div>
+      <h1 class="font-serif text-4xl sm:text-5xl font-bold text-ink-900 mb-3">你好，我是纸橙</h1>
+      <p class="text-ink-500">
+        一只在技术动画里慢慢发光的小橙子。
+      </p>
+    </div>
+
+    <div class="grid gap-5 sm:grid-cols-2 mb-10">
+      <div class="card p-6 reveal">
+        <div class="text-3xl mb-2">🎬</div>
+        <h3 class="font-serif text-lg font-semibold text-ink-900 mb-1">我在做什么</h3>
+        <p class="text-ink-500 text-sm leading-relaxed">
+          技术动画实习生 (Technical Animator)，正在学习动画系统、物理模拟、
+          以及 AI × 动画 的边界。
+        </p>
+      </div>
+      <div class="card p-6 reveal">
+        <div class="text-3xl mb-2">🧠</div>
+        <h3 class="font-serif text-lg font-semibold text-ink-900 mb-1">最近在学</h3>
+        <p class="text-ink-500 text-sm leading-relaxed">
+          Transformer / Attention 底层机制、PFNN 角色动画、以及各类 AI 动画生成的原理。
+        </p>
+      </div>
+      <div class="card p-6 reveal">
+        <div class="text-3xl mb-2">🎮</div>
+        <h3 class="font-serif text-lg font-semibold text-ink-900 mb-1">兴趣</h3>
+        <p class="text-ink-500 text-sm leading-relaxed">
+          ARC Raiders、游戏动态表现、AI 动画 Demo，以及任何会动的有趣东西。
+        </p>
+      </div>
+      <div class="card p-6 reveal">
+        <div class="text-3xl mb-2">✍️</div>
+        <h3 class="font-serif text-lg font-semibold text-ink-900 mb-1">为什么写博客</h3>
+        <p class="text-ink-500 text-sm leading-relaxed">
+          记录学习脚印，整理思考碎片。写下来的东西，才真正属于自己。
+        </p>
+      </div>
+    </div>
+
+    <div class="card p-8 text-center reveal">
+      <h3 class="font-serif text-xl font-semibold text-ink-900 mb-4">联系我</h3>
+      <div class="flex gap-3 justify-center flex-wrap">
+        <a href="https://github.com/zhichengZC" target="_blank" rel="noopener" class="btn-ghost">
+          <span>🐙</span><span>GitHub</span>
+        </a>
+        <a href="/rss.xml" class="btn-ghost">
+          <span>📡</span><span>RSS 订阅</span>
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('posts', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+// Group by year
+const grouped = posts.reduce((acc, p) => {
+  const y = p.data.pubDate.getFullYear();
+  (acc[y] ||= []).push(p);
+  return acc;
+}, {} as Record<number, typeof posts>);
+const years = Object.keys(grouped).map(Number).sort((a, b) => b - a);
+---
+
+<BaseLayout title="文章">
+  <section class="py-8">
+    <header class="mb-10 reveal">
+      <h1 class="font-serif text-4xl sm:text-5xl font-bold text-ink-900 mb-3">
+        <span class="text-paper-500">◆</span> 文章
+      </h1>
+      <p class="text-ink-500">
+        共 <span class="text-paper-600 font-semibold">{posts.length}</span> 篇 · 按时间倒序
+      </p>
+    </header>
+
+    {posts.length === 0 ? (
+      <div class="card p-10 text-center reveal">
+        <p class="text-4xl mb-3">📝</p>
+        <p class="text-ink-500">还没有文章，敬请期待～</p>
+      </div>
+    ) : (
+      <div class="space-y-12">
+        {years.map((year) => (
+          <div>
+            <h2 class="font-serif text-2xl text-ink-500 mb-5 reveal">{year}</h2>
+            <div class="grid gap-4 sm:grid-cols-2">
+              {grouped[year].map((post) => <PostCard post={post} />)}
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </section>
+</BaseLayout>

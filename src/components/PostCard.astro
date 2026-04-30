@@ -1,0 +1,32 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  post: CollectionEntry<'posts'>;
+}
+const { post } = Astro.props;
+const { title, description, pubDate, tags } = post.data;
+const date = pubDate.toLocaleDateString('zh-CN', {
+  year: 'numeric', month: 'long', day: 'numeric',
+});
+---
+
+<a href={`/blog/${post.slug}/`} class="card block p-6 group reveal">
+  <div class="flex items-center gap-3 text-xs text-ink-500 mb-2">
+    <time datetime={pubDate.toISOString()}>{date}</time>
+    {tags.length > 0 && <span>·</span>}
+    <div class="flex gap-1.5 flex-wrap">
+      {tags.slice(0, 3).map((t) => <span class="tag">#{t}</span>)}
+    </div>
+  </div>
+  <h3 class="font-serif text-xl font-semibold text-ink-900 mb-2 group-hover:text-paper-700 transition-colors">
+    {title}
+  </h3>
+  {description && (
+    <p class="text-ink-500 text-sm leading-relaxed line-clamp-2">{description}</p>
+  )}
+  <div class="mt-4 flex items-center text-paper-600 text-sm font-medium">
+    <span>阅读全文</span>
+    <span class="ml-1 transition-transform group-hover:translate-x-1">→</span>
+  </div>
+</a>

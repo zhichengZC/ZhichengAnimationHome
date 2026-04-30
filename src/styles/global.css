@@ -1,0 +1,123 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============ Base ============ */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-paper-50 text-ink-700 font-sans;
+  background-image:
+    radial-gradient(at 20% 10%, rgba(255, 184, 111, 0.15) 0px, transparent 50%),
+    radial-gradient(at 80% 90%, rgba(255, 227, 196, 0.3) 0px, transparent 50%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* Selection */
+::selection {
+  @apply bg-paper-300 text-ink-900;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-paper-50;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-paper-300 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-paper-400;
+}
+
+/* ============ Reveal on scroll ============ */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============ Gradient text ============ */
+.gradient-text {
+  background: linear-gradient(90deg, #FF9A4D, #E57A2C, #FFB86F, #FF9A4D);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient 8s ease infinite;
+}
+
+/* ============ Prose overrides for markdown ============ */
+.prose-paper {
+  @apply prose max-w-none;
+  --tw-prose-body: theme('colors.ink.700');
+  --tw-prose-headings: theme('colors.ink.900');
+  --tw-prose-links: theme('colors.paper.600');
+  --tw-prose-bold: theme('colors.ink.900');
+  --tw-prose-code: theme('colors.paper.700');
+  --tw-prose-quotes: theme('colors.ink.500');
+  --tw-prose-quote-borders: theme('colors.paper.400');
+}
+.prose-paper a {
+  @apply transition-colors;
+  text-decoration: none;
+  border-bottom: 1px dashed theme('colors.paper.400');
+}
+.prose-paper a:hover {
+  @apply text-paper-700;
+  border-bottom-style: solid;
+}
+.prose-paper code {
+  @apply bg-paper-100 px-1.5 py-0.5 rounded text-sm;
+}
+.prose-paper code::before,
+.prose-paper code::after {
+  content: '';
+}
+.prose-paper pre {
+  @apply bg-ink-900 rounded-2xl border border-paper-200 shadow-sm;
+}
+.prose-paper blockquote {
+  @apply bg-paper-100 rounded-r-xl py-1 not-italic font-normal;
+}
+
+/* ============ Card hover ============ */
+.card {
+  @apply bg-white/70 backdrop-blur-sm border border-paper-200 rounded-2xl transition-all duration-300;
+  box-shadow: 0 2px 12px rgba(229, 122, 44, 0.06);
+}
+.card:hover {
+  @apply border-paper-400 -translate-y-1;
+  box-shadow: 0 12px 32px rgba(229, 122, 44, 0.15);
+}
+
+/* ============ Button ============ */
+.btn {
+  @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-medium transition-all duration-300;
+}
+.btn-primary {
+  @apply btn bg-paper-500 text-white hover:bg-paper-600 shadow-md hover:shadow-lg hover:-translate-y-0.5;
+}
+.btn-ghost {
+  @apply btn border border-paper-300 text-ink-700 hover:bg-paper-100 hover:border-paper-400;
+}
+
+/* ============ Tag chip ============ */
+.tag {
+  @apply inline-block text-xs px-2.5 py-1 rounded-full bg-paper-100 text-paper-700 border border-paper-200 transition-colors;
+}
+.tag:hover {
+  @apply bg-paper-200;
+}

@@ -1,0 +1,22 @@
+---
+import { SITE_AUTHOR } from '../consts';
+const year = new Date().getFullYear();
+---
+
+<footer class="mt-24 border-t border-paper-100 bg-paper-50/50">
+  <div class="max-w-5xl mx-auto px-6 py-10 text-center text-ink-500 text-sm">
+    <p class="mb-2">
+      <span class="inline-block animate-float">🍊</span>
+      <span class="mx-2">·</span>
+      <span>用温度记录生活与思考</span>
+      <span class="mx-2">·</span>
+      <span class="inline-block animate-float" style="animation-delay: -3s">✨</span>
+    </p>
+    <p class="text-xs text-ink-300">
+      © {year} {SITE_AUTHOR} · Built with
+      <a href="https://astro.build" target="_blank" rel="noopener" class="hover:text-paper-600 transition-colors">Astro</a>
+      · Hosted on
+      <a href="https://pages.github.com" target="_blank" rel="noopener" class="hover:text-paper-600 transition-colors">GitHub Pages</a>
+    </p>
+  </div>
+</footer>

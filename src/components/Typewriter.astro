@@ -1,0 +1,38 @@
+---
+interface Props {
+  phrases: string[];
+}
+const { phrases } = Astro.props;
+const data = JSON.stringify(phrases);
+---
+
+<div class="typewriter font-serif text-2xl sm:text-3xl md:text-4xl text-ink-700">
+  <span class="tw-text"></span><span class="tw-cursor text-paper-500 animate-blink">|</span>
+</div>
+
+<script type="application/json" id="tw-data" set:html={data}></script>
+
+<script is:inline>
+  (() => {
+    const el = document.querySelector('.typewriter .tw-text');
+    const dataEl = document.getElementById('tw-data');
+    if (!el || !dataEl) return;
+    let phrases = [];
+    try { phrases = JSON.parse(dataEl.textContent || '[]'); } catch { return; }
+    if (!phrases.length) return;
+
+    let pi = 0, ci = 0, deleting = false;
+    const type = () => {
+      const cur = phrases[pi];
+      if (!deleting) {
+        el.textContent = cur.slice(0, ++ci);
+        if (ci === cur.length) { deleting = true; return setTimeout(type, 1800); }
+      } else {
+        el.textContent = cur.slice(0, --ci);
+        if (ci === 0) { deleting = false; pi = (pi + 1) % phrases.length; return setTimeout(type, 400); }
+      }
+      setTimeout(type, deleting ? 40 : 90);
+    };
+    type();
+  })();
+</script>
