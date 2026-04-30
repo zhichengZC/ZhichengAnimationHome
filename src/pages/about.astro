@@ -1,57 +1,123 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+const skills = [
+  { name: 'Animation Systems', level: 70, color: '#FF9A4D' },
+  { name: 'Transformer / AI',  level: 55, color: '#FFB86F' },
+  { name: 'Unreal / Unity',    level: 60, color: '#E57A2C' },
+  { name: 'Python / PyTorch',  level: 65, color: '#FF7A2E' },
+];
+
+const timeline = [
+  { year: '现在', title: '技术动画实习生', desc: '在研究 AI × 动画的边界，学习 Transformer 底层原理。', icon: '🎬' },
+  { year: '2024', title: '打开动画之门', desc: '接触 PFNN、动画状态机、Motion Matching 等核心技术。', icon: '🚪' },
+  { year: '更早', title: '游戏与动态的启蒙', desc: '被游戏中角色的每一个动作细节打动，决定走向这条路。', icon: '🎮' },
+];
 ---
 
 <BaseLayout title="关于" description="关于纸橙和这间动画小屋。">
   <section class="py-8 max-w-3xl mx-auto">
-    <div class="text-center mb-12 animate-fade-in-up">
-      <div class="text-7xl inline-block animate-float mb-4">🍊</div>
-      <h1 class="font-serif text-4xl sm:text-5xl font-bold text-ink-900 mb-3">你好，我是纸橙</h1>
-      <p class="text-ink-500">
-        一只在技术动画里慢慢发光的小橙子。
+    {/* ===== Hero ===== */}
+    <div class="text-center mb-16 relative">
+      <div class="absolute inset-0 -z-10 pointer-events-none flex items-center justify-center">
+        <div class="w-64 h-64 rounded-full blur-3xl opacity-40"
+             style="background: radial-gradient(circle, #FFB86F, transparent 70%);"></div>
+      </div>
+      <div class="text-8xl inline-block mb-6 animate-wobble-in">🍊</div>
+      <p class="font-hand text-2xl text-paper-600 mb-2">Hello, I'm</p>
+      <h1 class="font-serif text-4xl sm:text-5xl font-bold text-ink-900 mb-4">
+        <span class="gradient-text">纸橙</span>
+        <span class="text-ink-900"> · Paper Orange</span>
+      </h1>
+      <p class="text-ink-500 max-w-lg mx-auto leading-relaxed">
+        一只在技术动画里慢慢发光的小橙子，喜欢把学到的、想到的、感受到的都记下来。
       </p>
     </div>
 
-    <div class="grid gap-5 sm:grid-cols-2 mb-10">
-      <div class="card p-6 reveal">
-        <div class="text-3xl mb-2">🎬</div>
-        <h3 class="font-serif text-lg font-semibold text-ink-900 mb-1">我在做什么</h3>
-        <p class="text-ink-500 text-sm leading-relaxed">
-          技术动画实习生 (Technical Animator)，正在学习动画系统、物理模拟、
-          以及 AI × 动画 的边界。
-        </p>
-      </div>
-      <div class="card p-6 reveal">
-        <div class="text-3xl mb-2">🧠</div>
-        <h3 class="font-serif text-lg font-semibold text-ink-900 mb-1">最近在学</h3>
-        <p class="text-ink-500 text-sm leading-relaxed">
-          Transformer / Attention 底层机制、PFNN 角色动画、以及各类 AI 动画生成的原理。
-        </p>
-      </div>
-      <div class="card p-6 reveal">
-        <div class="text-3xl mb-2">🎮</div>
-        <h3 class="font-serif text-lg font-semibold text-ink-900 mb-1">兴趣</h3>
-        <p class="text-ink-500 text-sm leading-relaxed">
-          ARC Raiders、游戏动态表现、AI 动画 Demo，以及任何会动的有趣东西。
-        </p>
-      </div>
-      <div class="card p-6 reveal">
-        <div class="text-3xl mb-2">✍️</div>
-        <h3 class="font-serif text-lg font-semibold text-ink-900 mb-1">为什么写博客</h3>
-        <p class="text-ink-500 text-sm leading-relaxed">
-          记录学习脚印，整理思考碎片。写下来的东西，才真正属于自己。
-        </p>
+    {/* ===== Quick facts cards ===== */}
+    <div class="grid gap-5 sm:grid-cols-2 mb-16">
+      {[
+        { icon: '🎬', title: '我在做什么', body: '技术动画实习生 (Technical Animator)，正在学习动画系统、物理模拟、以及 AI × 动画 的边界。', tone: 'from-paper-100 to-paper-200' },
+        { icon: '🧠', title: '最近在学', body: 'Transformer / Attention 底层机制、PFNN 角色动画、以及各类 AI 动画生成的原理。', tone: 'from-paper-100 to-paper-200' },
+        { icon: '🎮', title: '兴趣', body: 'ARC Raiders、游戏动态表现、AI 动画 Demo，以及任何会动的有趣东西。', tone: 'from-paper-100 to-paper-200' },
+        { icon: '✍️', title: '为什么写博客', body: '记录学习脚印，整理思考碎片。写下来的东西，才真正属于自己。', tone: 'from-paper-100 to-paper-200' },
+      ].map((item) => (
+        <div class="card card-accent card-glow p-6 reveal group">
+          <div class="flex items-start gap-4">
+            <div class={`sticker text-2xl bg-gradient-to-br ${item.tone}`}>{item.icon}</div>
+            <div class="flex-1">
+              <h3 class="font-serif text-lg font-semibold text-ink-900 mb-1">{item.title}</h3>
+              <p class="text-ink-500 text-sm leading-relaxed">{item.body}</p>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* ===== Skills ===== */}
+    <div class="mb-16 reveal">
+      <h2 class="section-title mb-2">当前技能树</h2>
+      <p class="text-sm text-ink-500 ml-6 mb-6 font-hand text-lg">leveling up 📈</p>
+
+      <div class="card p-6 sm:p-8 space-y-5">
+        {skills.map((s, i) => (
+          <div>
+            <div class="flex items-baseline justify-between mb-1.5">
+              <span class="text-ink-700 font-medium">{s.name}</span>
+              <span class="text-xs text-paper-600 font-mono">{s.level}%</span>
+            </div>
+            <div class="h-2 rounded-full bg-paper-100 overflow-hidden">
+              <div
+                class="h-full rounded-full relative reveal-left"
+                style={`width: ${s.level}%; background: linear-gradient(90deg, ${s.color}, #E57A2C); transition-delay: ${i * 120}ms;`}
+              >
+                <div class="absolute inset-0 opacity-40"
+                     style="background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent); background-size: 200% 100%; animation: shine 2.5s ease-in-out infinite;"></div>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
 
-    <div class="card p-8 text-center reveal">
-      <h3 class="font-serif text-xl font-semibold text-ink-900 mb-4">联系我</h3>
+    {/* ===== Timeline ===== */}
+    <div class="mb-16 reveal">
+      <h2 class="section-title mb-2">我的轨迹</h2>
+      <p class="text-sm text-ink-500 ml-6 mb-6 font-hand text-lg">journey so far 🛤️</p>
+
+      <div class="relative pl-10">
+        <div class="absolute left-3 top-2 bottom-2 w-[2px] bg-gradient-to-b from-paper-400 via-paper-300 to-transparent"></div>
+        {timeline.map((t) => (
+          <div class="relative mb-6 reveal-left">
+            <div class="absolute -left-[26px] top-1 w-6 h-6 rounded-full bg-gradient-to-br from-paper-300 to-paper-500 flex items-center justify-center text-xs shadow-soft ring-4 ring-paper-50">
+              {t.icon}
+            </div>
+            <div class="card p-5">
+              <div class="text-xs text-paper-600 font-mono tracking-widest mb-1">{t.year}</div>
+              <h4 class="font-serif text-lg font-semibold text-ink-900 mb-1">{t.title}</h4>
+              <p class="text-sm text-ink-500 leading-relaxed">{t.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* ===== Contact ===== */}
+    <div class="card card-glow p-8 text-center reveal relative overflow-hidden">
+      <div class="absolute -right-10 -top-10 w-48 h-48 rounded-full opacity-10"
+           style="background: radial-gradient(circle, #FF9A4D, transparent 70%);"></div>
+
+      <p class="font-hand text-2xl text-paper-600 mb-1">let's connect</p>
+      <h3 class="font-serif text-xl font-semibold text-ink-900 mb-5">欢迎来找我聊聊 ☕</h3>
       <div class="flex gap-3 justify-center flex-wrap">
         <a href="https://github.com/zhichengZC" target="_blank" rel="noopener" class="btn-ghost">
-          <span>🐙</span><span>GitHub</span>
+          <span class="text-lg">🐙</span><span>GitHub</span>
         </a>
         <a href="/rss.xml" class="btn-ghost">
-          <span>📡</span><span>RSS 订阅</span>
+          <span class="text-lg">📡</span><span>RSS 订阅</span>
+        </a>
+        <a href="/blog" class="btn-primary btn-shine">
+          <span class="text-lg">📖</span><span>读我的文章</span>
         </a>
       </div>
     </div>

@@ -3,12 +3,26 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout title="页面走丢啦">
-  <section class="py-20 text-center">
-    <div class="text-8xl mb-6 inline-block animate-float">🍊</div>
-    <h1 class="font-serif text-5xl font-bold text-ink-900 mb-3">404</h1>
-    <p class="text-ink-500 mb-8">小橙子在这里找不到这个页面...</p>
-    <a href="/" class="btn-primary">
-      <span>←</span><span>回到首页</span>
-    </a>
+  <section class="py-24 text-center relative">
+    <div class="absolute inset-0 -z-10 pointer-events-none flex items-center justify-center">
+      <div class="font-serif font-black text-paper-200/50 text-[18rem] leading-none select-none">404</div>
+    </div>
+
+    <div class="text-8xl mb-6 inline-block animate-wobble-in">🍊</div>
+    <p class="font-hand text-3xl text-paper-600 mb-2">oops...</p>
+    <h1 class="font-serif text-4xl sm:text-5xl font-bold text-ink-900 mb-3">页面走丢啦</h1>
+    <p class="text-ink-500 mb-10 max-w-md mx-auto leading-relaxed">
+      小橙子在果园里找不到这个页面，也许它被风吹走了？
+      <br />
+      要不咱们回到起点重新出发吧 ～
+    </p>
+    <div class="flex gap-3 justify-center flex-wrap">
+      <a href="/" class="btn-primary btn-shine">
+        <span>←</span><span>回到首页</span>
+      </a>
+      <a href="/blog" class="btn-ghost">
+        <span>📖</span><span>去看看文章</span>
+      </a>
+    </div>
   </section>
 </BaseLayout>

@@ -3,20 +3,83 @@ import { SITE_AUTHOR } from '../consts';
 const year = new Date().getFullYear();
 ---
 
-<footer class="mt-24 border-t border-paper-100 bg-paper-50/50">
-  <div class="max-w-5xl mx-auto px-6 py-10 text-center text-ink-500 text-sm">
-    <p class="mb-2">
-      <span class="inline-block animate-float">🍊</span>
-      <span class="mx-2">·</span>
-      <span>用温度记录生活与思考</span>
-      <span class="mx-2">·</span>
-      <span class="inline-block animate-float" style="animation-delay: -3s">✨</span>
-    </p>
-    <p class="text-xs text-ink-300">
-      © {year} {SITE_AUTHOR} · Built with
-      <a href="https://astro.build" target="_blank" rel="noopener" class="hover:text-paper-600 transition-colors">Astro</a>
-      · Hosted on
-      <a href="https://pages.github.com" target="_blank" rel="noopener" class="hover:text-paper-600 transition-colors">GitHub Pages</a>
-    </p>
+<footer class="relative mt-28">
+  {/* Wave divider top */}
+  <svg class="absolute -top-1 left-0 w-full h-10 text-paper-100" preserveAspectRatio="none" viewBox="0 0 1200 40" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 20 Q 150 0 300 20 T 600 20 T 900 20 T 1200 20 L 1200 40 L 0 40 Z" fill="currentColor" />
+  </svg>
+
+  <div class="bg-paper-100/60 border-t border-paper-200/60 backdrop-blur-sm">
+    <div class="max-w-5xl mx-auto px-6 py-12">
+      {/* Main row */}
+      <div class="grid gap-8 sm:grid-cols-3 mb-8">
+        {/* Brand */}
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-2xl animate-float inline-block">🍊</span>
+            <span class="font-serif text-lg font-semibold text-ink-900">纸橙的动画小屋</span>
+          </div>
+          <p class="text-sm text-ink-500 leading-relaxed">
+            记录动画的温度，沉淀技术的思考。
+            <br />
+            <span class="font-hand text-paper-600 text-base">stay curious, stay warm.</span>
+          </p>
+        </div>
+
+        {/* Nav */}
+        <div>
+          <h4 class="text-xs tracking-widest text-paper-600 font-semibold mb-3">EXPLORE</h4>
+          <ul class="space-y-2 text-sm text-ink-500">
+            <li><a href="/" class="hover:text-paper-700 transition-colors inline-flex items-center gap-1 group">
+              <span class="text-paper-400 group-hover:translate-x-0.5 transition-transform">›</span> 首页
+            </a></li>
+            <li><a href="/blog" class="hover:text-paper-700 transition-colors inline-flex items-center gap-1 group">
+              <span class="text-paper-400 group-hover:translate-x-0.5 transition-transform">›</span> 文章
+            </a></li>
+            <li><a href="/about" class="hover:text-paper-700 transition-colors inline-flex items-center gap-1 group">
+              <span class="text-paper-400 group-hover:translate-x-0.5 transition-transform">›</span> 关于
+            </a></li>
+          </ul>
+        </div>
+
+        {/* Social */}
+        <div>
+          <h4 class="text-xs tracking-widest text-paper-600 font-semibold mb-3">CONNECT</h4>
+          <div class="flex flex-wrap gap-2">
+            <a href="https://github.com/zhichengZC" target="_blank" rel="noopener"
+               class="sticker w-11 h-11 rounded-xl text-xl hover-wobble" aria-label="GitHub">
+              🐙
+            </a>
+            <a href="/rss.xml"
+               class="sticker w-11 h-11 rounded-xl text-xl hover-wobble" aria-label="RSS">
+              📡
+            </a>
+            <a href="mailto:hello@example.com"
+               class="sticker w-11 h-11 rounded-xl text-xl hover-wobble" aria-label="Email">
+              ✉️
+            </a>
+          </div>
+          <p class="text-xs text-ink-300 mt-3 font-hand text-base">drop me a line ~</p>
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div class="divider-dots my-6">
+        <span class="text-paper-400">🍊</span>
+      </div>
+
+      {/* Bottom line */}
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ink-300">
+        <p>
+          © {year} <span class="text-paper-600 font-medium">{SITE_AUTHOR}</span> · 用温度记录生活与思考
+        </p>
+        <p>
+          Built with
+          <a href="https://astro.build" target="_blank" rel="noopener" class="text-paper-600 hover:text-paper-700 transition-colors mx-1">Astro</a>
+          ·
+          <a href="https://pages.github.com" target="_blank" rel="noopener" class="text-paper-600 hover:text-paper-700 transition-colors mx-1">GitHub Pages</a>
+        </p>
+      </div>
+    </div>
   </div>
 </footer>

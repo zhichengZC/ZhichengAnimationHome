@@ -4,14 +4,23 @@ import { NAV_LINKS, SITE_TITLE } from '../consts';
 const { pathname } = Astro.url;
 ---
 
-<header class="sticky top-0 z-40 backdrop-blur-md bg-paper-50/75 border-b border-paper-100">
+<header class="sticky top-0 z-40 backdrop-blur-xl bg-paper-50/80 border-b border-paper-200/60 shadow-soft">
   <nav class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-    <a href="/" class="group flex items-center gap-2.5">
-      <span class="text-2xl transition-transform group-hover:rotate-12 group-hover:scale-110 duration-500">🍊</span>
-      <span class="font-serif text-lg font-semibold text-ink-900 tracking-wide">{SITE_TITLE}</span>
+    <a href="/" class="group flex items-center gap-2.5 select-none">
+      <span class="relative inline-flex items-center justify-center w-10 h-10 rounded-xl
+                   bg-gradient-to-br from-paper-100 to-paper-200 border border-paper-300/60
+                   shadow-soft transition-all duration-500
+                   group-hover:rotate-[18deg] group-hover:scale-110 group-hover:shadow-glow">
+        <span class="text-2xl">🍊</span>
+        <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-leaf-500 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+      </span>
+      <span class="flex flex-col leading-tight">
+        <span class="font-serif text-lg font-semibold text-ink-900 tracking-wide">{SITE_TITLE}</span>
+        <span class="font-hand text-sm text-paper-600 -mt-0.5">paper orange .</span>
+      </span>
     </a>
 
-    <ul class="flex items-center gap-1 sm:gap-2">
+    <ul class="flex items-center gap-1 sm:gap-1.5">
       {NAV_LINKS.map((link) => {
         const isActive = link.href === '/'
           ? pathname === '/'
@@ -21,17 +30,26 @@ const { pathname } = Astro.url;
             <a
               href={link.href}
               class:list={[
-                'px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300',
+                'relative px-3 sm:px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300 group',
                 isActive
-                  ? 'bg-paper-200 text-ink-900'
-                  : 'text-ink-500 hover:bg-paper-100 hover:text-ink-900',
+                  ? 'text-ink-900'
+                  : 'text-ink-500 hover:text-ink-900',
               ]}
             >
-              {link.label}
+              {isActive && (
+                <span class="absolute inset-0 rounded-full bg-gradient-to-br from-paper-200 to-paper-300/80 shadow-soft -z-0"></span>
+              )}
+              <span class="relative z-10">{link.label}</span>
+              {!isActive && (
+                <span class="absolute inset-x-3 -bottom-0.5 h-[2px] rounded-full bg-paper-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
+              )}
             </a>
           </li>
         );
       })}
     </ul>
   </nav>
+
+  {/* decorative gradient bottom line */}
+  <div class="h-[1px] bg-gradient-to-r from-transparent via-paper-400/50 to-transparent"></div>
 </header>

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;600;700&family=JetBrains+Mono:wght@400;500&family=Caveat:wght@400;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -11,11 +11,38 @@ html {
 
 body {
   @apply bg-paper-50 text-ink-700 font-sans;
+  background-color: #FFFBF5;
   background-image:
-    radial-gradient(at 20% 10%, rgba(255, 184, 111, 0.15) 0px, transparent 50%),
-    radial-gradient(at 80% 90%, rgba(255, 227, 196, 0.3) 0px, transparent 50%);
+    radial-gradient(at 15% 5%, rgba(255, 184, 111, 0.28) 0px, transparent 55%),
+    radial-gradient(at 85% 15%, rgba(255, 218, 185, 0.35) 0px, transparent 50%),
+    radial-gradient(at 75% 90%, rgba(255, 154, 77, 0.15) 0px, transparent 55%),
+    radial-gradient(at 5% 75%, rgba(255, 243, 228, 0.8) 0px, transparent 50%);
   background-attachment: fixed;
   min-height: 100vh;
+  position: relative;
+}
+
+/* Paper grain texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.9 0 0 0 0 0.75 0 0 0 0 0.55 0 0 0 0.35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Grid dots background (subtle) */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.4;
+  background-image: radial-gradient(circle, rgba(229, 122, 44, 0.12) 1px, transparent 1.5px);
+  background-size: 28px 28px;
 }
 
 /* Selection */
@@ -29,34 +56,87 @@ body {
   height: 10px;
 }
 ::-webkit-scrollbar-track {
-  @apply bg-paper-50;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   @apply bg-paper-300 rounded-full;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-paper-400;
+  @apply bg-paper-500;
+  background-clip: padding-box;
 }
 
 /* ============ Reveal on scroll ============ */
 .reveal {
   opacity: 0;
   transform: translateY(40px);
-  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .reveal.is-visible {
   opacity: 1;
   transform: translateY(0);
 }
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-left.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
 
 /* ============ Gradient text ============ */
 .gradient-text {
-  background: linear-gradient(90deg, #FF9A4D, #E57A2C, #FFB86F, #FF9A4D);
+  background: linear-gradient(90deg, #FF7A2E, #FFB86F, #FF9A4D, #E57A2C, #FF7A2E);
   background-size: 300% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: gradient 8s ease infinite;
+  filter: drop-shadow(0 2px 10px rgba(255, 154, 77, 0.25));
+}
+
+/* Handwritten accent font */
+.font-hand {
+  font-family: 'Caveat', 'Noto Serif SC', cursive;
+}
+
+/* Underline brush stroke */
+.brush-underline {
+  position: relative;
+  display: inline-block;
+}
+.brush-underline::after {
+  content: '';
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  height: 10px;
+  background: linear-gradient(90deg, transparent, #FFB86F, #FF9A4D, #FFB86F, transparent);
+  border-radius: 50%;
+  opacity: 0.5;
+  filter: blur(1px);
+  z-index: -1;
+  transform: scaleX(0.85);
+}
+
+/* Section header decoration */
+.section-title {
+  @apply font-serif text-2xl sm:text-3xl font-semibold text-ink-900 flex items-center gap-3;
+}
+.section-title::before {
+  content: '';
+  width: 4px;
+  height: 22px;
+  background: linear-gradient(180deg, #FF9A4D, #E57A2C);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(255, 154, 77, 0.5);
 }
 
 /* ============ Prose overrides for markdown ============ */
@@ -87,37 +167,209 @@ body {
   content: '';
 }
 .prose-paper pre {
-  @apply bg-ink-900 rounded-2xl border border-paper-200 shadow-sm;
+  @apply bg-ink-900 rounded-2xl border border-paper-200 shadow-lg;
 }
 .prose-paper blockquote {
   @apply bg-paper-100 rounded-r-xl py-1 not-italic font-normal;
+  border-left-width: 4px;
 }
 
-/* ============ Card hover ============ */
+/* ============ Card ============ */
 .card {
-  @apply bg-white/70 backdrop-blur-sm border border-paper-200 rounded-2xl transition-all duration-300;
-  box-shadow: 0 2px 12px rgba(229, 122, 44, 0.06);
+  @apply bg-white/75 backdrop-blur-sm border border-paper-200 rounded-2xl transition-all duration-500;
+  box-shadow: 0 2px 14px rgba(229, 122, 44, 0.06),
+              inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 .card:hover {
   @apply border-paper-400 -translate-y-1;
-  box-shadow: 0 12px 32px rgba(229, 122, 44, 0.15);
+  box-shadow: 0 18px 40px rgba(229, 122, 44, 0.18),
+              0 4px 12px rgba(229, 122, 44, 0.08),
+              inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
-/* ============ Button ============ */
+/* Card with accent left bar */
+.card-accent {
+  position: relative;
+  overflow: hidden;
+}
+.card-accent::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, #FFB86F, #FF9A4D, #E57A2C);
+  opacity: 0.85;
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.card-accent:hover::before {
+  width: 6px;
+}
+
+/* Card glow on hover (halo) */
+.card-glow {
+  position: relative;
+}
+.card-glow::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, transparent, rgba(255, 184, 111, 0.6), transparent);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+.card-glow:hover::after {
+  opacity: 1;
+}
+
+/* ============ Buttons ============ */
 .btn {
   @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-medium transition-all duration-300;
 }
 .btn-primary {
-  @apply btn bg-paper-500 text-white hover:bg-paper-600 shadow-md hover:shadow-lg hover:-translate-y-0.5;
+  @apply btn text-white;
+  background: linear-gradient(135deg, #FF9A4D, #E57A2C);
+  box-shadow: 0 4px 14px rgba(229, 122, 44, 0.35),
+              inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(229, 122, 44, 0.5),
+              inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.btn-primary:active {
+  transform: translateY(0);
 }
 .btn-ghost {
-  @apply btn border border-paper-300 text-ink-700 hover:bg-paper-100 hover:border-paper-400;
+  @apply btn border border-paper-300 text-ink-700 bg-white/60 backdrop-blur-sm;
+}
+.btn-ghost:hover {
+  @apply border-paper-500 text-paper-700;
+  background: rgba(255, 243, 228, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(229, 122, 44, 0.15);
 }
 
-/* ============ Tag chip ============ */
+/* Shine sweep on hover */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shine::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transition: left 0.6s;
+}
+.btn-shine:hover::before {
+  left: 100%;
+}
+
+/* ============ Tag chips ============ */
 .tag {
-  @apply inline-block text-xs px-2.5 py-1 rounded-full bg-paper-100 text-paper-700 border border-paper-200 transition-colors;
+  @apply inline-block text-xs px-2.5 py-1 rounded-full bg-paper-100 text-paper-700 border border-paper-200 transition-all duration-300;
 }
 .tag:hover {
-  @apply bg-paper-200;
+  @apply bg-paper-200 border-paper-400;
+  transform: translateY(-1px) scale(1.05);
+}
+
+/* ============ Divider ============ */
+.divider-dots {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  color: theme('colors.paper.400');
+}
+.divider-dots::before,
+.divider-dots::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, theme('colors.paper.300'), transparent);
+}
+
+/* ============ Blob / Sticker ============ */
+.sticker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #FFF3E4, #FFE4C4);
+  border: 1px solid rgba(229, 122, 44, 0.25);
+  box-shadow: 0 4px 12px rgba(229, 122, 44, 0.15),
+              inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.sticker:hover {
+  transform: rotate(-6deg) scale(1.08);
+}
+
+/* ============ Utility: wobble on hover ============ */
+.hover-wobble {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.hover-wobble:hover {
+  transform: rotate(-3deg) scale(1.05);
+}
+
+/* Slow spin for decoration */
+@keyframes slow-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-slow-spin {
+  animation: slow-spin 22s linear infinite;
+}
+
+/* Drift (horizontal soft float) */
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(10px, -8px); }
+  66% { transform: translate(-6px, 6px); }
+}
+.animate-drift {
+  animation: drift 10s ease-in-out infinite;
+}
+
+/* Gentle tilt on load */
+@keyframes wobble-in {
+  0% { opacity: 0; transform: scale(0.6) rotate(-20deg); }
+  60% { opacity: 1; transform: scale(1.1) rotate(8deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+.animate-wobble-in {
+  animation: wobble-in 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Shine sweep (standalone) */
+@keyframes shine {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Line clamp helper */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }

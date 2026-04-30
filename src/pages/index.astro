@@ -7,24 +7,59 @@ import { getCollection } from 'astro:content';
 const allPosts = (await getCollection('posts', ({ data }) => !data.draft))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 const latest = allPosts.slice(0, 4);
+
+// Stats
+const totalPosts = allPosts.length;
+const totalTags = new Set(allPosts.flatMap((p) => p.data.tags)).size;
+const daysSinceFirst = allPosts.length
+  ? Math.max(1, Math.ceil((Date.now() - Math.min(...allPosts.map((p) => p.data.pubDate.valueOf()))) / 86400000))
+  : 1;
+
+// Top tags (by frequency)
+const tagCount: Record<string, number> = {};
+allPosts.forEach((p) => p.data.tags.forEach((t) => { tagCount[t] = (tagCount[t] || 0) + 1; }));
+const topTags = Object.entries(tagCount).sort((a, b) => b[1] - a[1]).slice(0, 8);
 ---
 
 <BaseLayout>
   {/* ========== Hero ========== */}
-  <section class="relative py-16 sm:py-24 text-center overflow-hidden">
+  <section class="relative py-20 sm:py-28 text-center overflow-hidden">
+    {/* Floating decorative icons */}
     <div class="absolute inset-0 -z-10 pointer-events-none">
-      <div class="absolute top-10 left-1/4 text-6xl opacity-20 animate-float">🍊</div>
-      <div class="absolute top-32 right-1/4 text-5xl opacity-20 animate-float" style="animation-delay: -2s">✨</div>
-      <div class="absolute bottom-10 left-1/3 text-4xl opacity-20 animate-float" style="animation-delay: -4s">🌱</div>
+      <div class="absolute top-8 left-[8%] text-5xl opacity-25 animate-float">🍊</div>
+      <div class="absolute top-20 right-[10%] text-4xl opacity-20 animate-float-slow" style="animation-delay: -2s">✨</div>
+      <div class="absolute bottom-10 left-[22%] text-3xl opacity-20 animate-drift" style="animation-delay: -4s">🌱</div>
+      <div class="absolute top-40 left-[40%] text-2xl opacity-15 animate-float" style="animation-delay: -3s">☁️</div>
+      <div class="absolute bottom-24 right-[20%] text-3xl opacity-20 animate-drift" style="animation-delay: -1s">🎬</div>
+      <div class="absolute top-10 right-[35%] text-xl opacity-15 animate-float-slow" style="animation-delay: -5s">⭐</div>
     </div>
 
-    <p class="text-paper-600 mb-4 tracking-widest text-sm animate-fade-in">· 欢迎来到 ·</p>
+    {/* Big decorative orange SVG behind the title */}
+    <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 pointer-events-none opacity-[0.08]">
+      <svg width="420" height="420" viewBox="0 0 200 200" class="animate-slow-spin">
+        <defs>
+          <radialGradient id="orangeGrad" cx="50%" cy="50%">
+            <stop offset="0%" stop-color="#FFB86F" />
+            <stop offset="100%" stop-color="#E57A2C" />
+          </radialGradient>
+        </defs>
+        <circle cx="100" cy="100" r="80" fill="url(#orangeGrad)" />
+        <circle cx="100" cy="100" r="80" fill="none" stroke="#B85A1A" stroke-width="0.5" stroke-dasharray="2 4" opacity="0.6"/>
+        <path d="M 100 28 Q 95 38 100 48 Q 105 38 100 28" fill="#6FB564" />
+      </svg>
+    </div>
 
-    <h1 class="font-serif text-5xl sm:text-6xl md:text-7xl font-bold mb-6 animate-fade-in-up">
+    <p class="text-paper-600 mb-4 tracking-[0.4em] text-xs sm:text-sm animate-fade-in">
+      <span class="inline-block w-8 h-px bg-paper-400 align-middle mr-3"></span>
+      WELCOME TO PAPER ORANGE
+      <span class="inline-block w-8 h-px bg-paper-400 align-middle ml-3"></span>
+    </p>
+
+    <h1 class="font-serif text-5xl sm:text-6xl md:text-7xl font-bold mb-6 animate-fade-in-up leading-tight">
       <span class="gradient-text">纸橙的动画小屋</span>
     </h1>
 
-    <div class="opacity-0 animate-fade-in-up" style="animation-delay: 0.3s; animation-fill-mode: forwards;">
+    <div class="opacity-0 animate-fade-in-up min-h-[3rem]" style="animation-delay: 0.3s; animation-fill-mode: forwards;">
       <Typewriter phrases={[
         '记录动画的温度 🎬',
         '沉淀技术的思考 💡',
@@ -33,32 +68,62 @@ const latest = allPosts.slice(0, 4);
       ]} />
     </div>
 
+    {/* Decorative handwritten tagline */}
+    <p class="font-hand text-2xl text-paper-600 mt-4 opacity-0 animate-fade-in" style="animation-delay: 0.8s; animation-fill-mode: forwards;">
+      ～ a warm corner of the internet ～
+    </p>
+
     <div class="mt-10 flex flex-wrap gap-3 justify-center opacity-0 animate-fade-in-up" style="animation-delay: 0.6s; animation-fill-mode: forwards;">
-      <a href="/blog" class="btn-primary">
+      <a href="/blog" class="btn-primary btn-shine">
         <span>开始阅读</span>
-        <span>→</span>
+        <span class="transition-transform group-hover:translate-x-1">→</span>
       </a>
       <a href="/about" class="btn-ghost">
+        <span>🍊</span>
         <span>关于纸橙</span>
       </a>
     </div>
+
+    {/* Scroll hint */}
+    <div class="mt-16 flex flex-col items-center text-paper-500 opacity-0 animate-fade-in" style="animation-delay: 1.1s; animation-fill-mode: forwards;">
+      <span class="text-xs tracking-widest mb-2">SCROLL</span>
+      <div class="w-[1px] h-10 bg-gradient-to-b from-paper-400 to-transparent animate-bounce-soft"></div>
+    </div>
   </section>
 
-  {/* ========== Latest ========== */}
+  {/* ========== Stats strip ========== */}
+  <section class="mb-16 reveal">
+    <div class="card p-6 grid grid-cols-3 divide-x divide-paper-200">
+      <div class="text-center px-4">
+        <div class="font-serif text-3xl sm:text-4xl font-bold gradient-text">{totalPosts}</div>
+        <div class="text-xs text-ink-500 mt-1 tracking-widest">篇文章</div>
+      </div>
+      <div class="text-center px-4">
+        <div class="font-serif text-3xl sm:text-4xl font-bold gradient-text">{totalTags}</div>
+        <div class="text-xs text-ink-500 mt-1 tracking-widest">个标签</div>
+      </div>
+      <div class="text-center px-4">
+        <div class="font-serif text-3xl sm:text-4xl font-bold gradient-text">{daysSinceFirst}</div>
+        <div class="text-xs text-ink-500 mt-1 tracking-widest">天陪伴</div>
+      </div>
+    </div>
+  </section>
+
+  {/* ========== Latest posts ========== */}
   <section class="mt-12">
     <div class="flex items-end justify-between mb-8 reveal">
-      <h2 class="font-serif text-2xl sm:text-3xl font-semibold text-ink-900">
-        <span class="text-paper-500">◆</span>
-        最新文章
-      </h2>
-      <a href="/blog" class="text-sm text-paper-600 hover:text-paper-700 transition-colors">
-        查看全部 →
+      <div>
+        <h2 class="section-title">最新文章</h2>
+        <p class="text-sm text-ink-500 mt-2 ml-6 font-hand text-lg">recent thoughts ✍️</p>
+      </div>
+      <a href="/blog" class="text-sm text-paper-600 hover:text-paper-700 transition-colors group whitespace-nowrap">
+        查看全部 <span class="inline-block transition-transform group-hover:translate-x-1">→</span>
       </a>
     </div>
 
     {latest.length === 0 ? (
       <div class="card p-10 text-center reveal">
-        <p class="text-4xl mb-3">📝</p>
+        <p class="text-4xl mb-3 animate-wave inline-block origin-bottom-right">�</p>
         <p class="text-ink-500">小屋刚刚开张，第一篇文章即将到来～</p>
       </div>
     ) : (
@@ -68,19 +133,66 @@ const latest = allPosts.slice(0, 4);
     )}
   </section>
 
+  {/* ========== Tags cloud ========== */}
+  {topTags.length > 0 && (
+    <section class="mt-20 reveal">
+      <div class="flex items-end justify-between mb-6">
+        <div>
+          <h2 class="section-title">热门标签</h2>
+          <p class="text-sm text-ink-500 mt-2 ml-6 font-hand text-lg">what i'm into 🏷️</p>
+        </div>
+      </div>
+      <div class="card p-8 flex flex-wrap gap-3 justify-center">
+        {topTags.map(([tag, count], i) => {
+          const sizes = ['text-sm', 'text-base', 'text-lg', 'text-xl'];
+          const size = sizes[Math.min(3, Math.floor(count * 1.5))];
+          return (
+            <a
+              href={`/blog#${tag}`}
+              class={`tag ${size} hover-wobble`}
+              style={`animation-delay: ${i * 60}ms`}
+            >
+              #{tag}
+              <span class="ml-1 text-paper-400 text-xs">{count}</span>
+            </a>
+          );
+        })}
+      </div>
+    </section>
+  )}
+
   {/* ========== About strip ========== */}
-  <section class="mt-24 reveal">
-    <div class="card p-8 sm:p-10 text-center">
-      <p class="text-5xl mb-4 inline-block animate-float">🍊</p>
-      <h3 class="font-serif text-2xl font-semibold text-ink-900 mb-3">你好，我是纸橙</h3>
-      <p class="text-ink-500 max-w-xl mx-auto leading-relaxed">
-        技术动画实习生，正在学习 Transformer 与动画系统，热爱 AI 动画、游戏动态，
-        也喜欢把思考慢慢写下来。这里是我的小小角落，欢迎常来坐坐 ☕
-      </p>
-      <a href="/about" class="btn-ghost mt-6">
-        <span>更多关于我</span>
-        <span>→</span>
-      </a>
+  <section class="mt-20 mb-10 reveal">
+    <div class="card card-accent card-glow p-8 sm:p-12 relative overflow-hidden">
+      {/* Background blob */}
+      <div class="absolute -right-20 -top-20 w-80 h-80 rounded-full opacity-[0.08] pointer-events-none"
+           style="background: radial-gradient(circle, #FF9A4D, transparent 60%);"></div>
+      <div class="absolute -left-16 -bottom-16 w-72 h-72 rounded-full opacity-[0.08] pointer-events-none"
+           style="background: radial-gradient(circle, #FFB86F, transparent 60%);"></div>
+
+      <div class="relative grid sm:grid-cols-[auto_1fr] gap-8 items-center">
+        <div class="sticker text-5xl w-24 h-24 mx-auto sm:mx-0 animate-bounce-soft">🍊</div>
+        <div class="text-center sm:text-left">
+          <p class="font-hand text-2xl text-paper-600 mb-1">Hi there 👋</p>
+          <h3 class="font-serif text-2xl sm:text-3xl font-semibold text-ink-900 mb-3">
+            你好，我是<span class="brush-underline">纸橙</span>
+          </h3>
+          <p class="text-ink-500 max-w-xl leading-relaxed mb-6">
+            技术动画实习生，正在学习 Transformer 与动画系统，热爱 AI 动画、游戏动态，
+            也喜欢把思考慢慢写下来。这里是我的小小角落，欢迎常来坐坐 ☕
+          </p>
+          <div class="flex gap-3 flex-wrap justify-center sm:justify-start">
+            <a href="/about" class="btn-ghost">
+              <span>更多关于我</span>
+              <span>→</span>
+            </a>
+            <a href="https://github.com/zhichengZC" target="_blank" rel="noopener" class="btn-ghost">
+              <span>🐙</span>
+              <span>GitHub</span>
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 </BaseLayout>

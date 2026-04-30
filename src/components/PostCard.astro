@@ -9,24 +9,66 @@ const { title, description, pubDate, tags } = post.data;
 const date = pubDate.toLocaleDateString('zh-CN', {
   year: 'numeric', month: 'long', day: 'numeric',
 });
+
+// Reading time estimate (~300 chars/min for CN mixed)
+const rawBody = post.body || '';
+const readMin = Math.max(1, Math.round(rawBody.length / 400));
+
+// Emoji by primary tag (fallback)
+const emojiMap: Record<string, string> = {
+  '动画': '🎬', '动态': '🎬',
+  'AI': '🤖', '机器学习': '🤖',
+  '生活': '🌿', '随笔': '☕',
+  '技术': '💡', '教程': '📚',
+  'Markdown': '📝', '指南': '🧭',
+  '游戏': '🎮',
+};
+const firstTag = tags[0];
+const emoji = emojiMap[firstTag] || '🍊';
 ---
 
-<a href={`/blog/${post.slug}/`} class="card block p-6 group reveal">
-  <div class="flex items-center gap-3 text-xs text-ink-500 mb-2">
-    <time datetime={pubDate.toISOString()}>{date}</time>
-    {tags.length > 0 && <span>·</span>}
-    <div class="flex gap-1.5 flex-wrap">
-      {tags.slice(0, 3).map((t) => <span class="tag">#{t}</span>)}
-    </div>
+<a href={`/blog/${post.slug}/`} class="card card-accent card-glow block p-6 group reveal relative">
+  {/* Corner emoji */}
+  <div class="absolute top-4 right-4 text-2xl transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110 select-none">
+    {emoji}
   </div>
-  <h3 class="font-serif text-xl font-semibold text-ink-900 mb-2 group-hover:text-paper-700 transition-colors">
+
+  {/* Meta */}
+  <div class="flex flex-wrap items-center gap-2 text-xs text-ink-500 mb-3 pr-10">
+    <time datetime={pubDate.toISOString()} class="inline-flex items-center gap-1">
+      <span class="text-paper-400">📅</span>{date}
+    </time>
+    <span class="text-paper-300">·</span>
+    <span class="inline-flex items-center gap-1">
+      <span class="text-paper-400">☕</span>{readMin} 分钟
+    </span>
+  </div>
+
+  {/* Title */}
+  <h3 class="font-serif text-xl font-semibold text-ink-900 mb-2 group-hover:text-paper-700 transition-colors leading-snug pr-10">
     {title}
   </h3>
+
+  {/* Description */}
   {description && (
-    <p class="text-ink-500 text-sm leading-relaxed line-clamp-2">{description}</p>
+    <p class="text-ink-500 text-sm leading-relaxed line-clamp-2 mb-4">{description}</p>
   )}
-  <div class="mt-4 flex items-center text-paper-600 text-sm font-medium">
-    <span>阅读全文</span>
-    <span class="ml-1 transition-transform group-hover:translate-x-1">→</span>
+
+  {/* Tags */}
+  {tags.length > 0 && (
+    <div class="flex gap-1.5 flex-wrap mb-4">
+      {tags.slice(0, 3).map((t) => <span class="tag">#{t}</span>)}
+    </div>
+  )}
+
+  {/* Footer */}
+  <div class="flex items-center justify-between pt-3 border-t border-dashed border-paper-200">
+    <span class="text-paper-600 text-sm font-medium inline-flex items-center gap-1">
+      阅读全文
+      <span class="transition-transform duration-300 group-hover:translate-x-1">→</span>
+    </span>
+    <span class="font-hand text-paper-400 text-base opacity-0 group-hover:opacity-100 transition-opacity">
+      click me ✨
+    </span>
   </div>
 </a>
