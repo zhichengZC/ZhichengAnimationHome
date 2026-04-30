@@ -6,7 +6,7 @@ import tailwind from '@astrojs/tailwind';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://zhichengzc.github.io',
-  // If deployed to a sub-path, set `base: '/repo-name'`. For user site (zhichengZC.github.io), leave empty.
+  base: '/ZhichengAnimationHome',
   integrations: [mdx(), sitemap(), tailwind()],
   markdown: {
     shikiConfig: {
