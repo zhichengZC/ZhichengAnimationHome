@@ -1,26 +1,18 @@
 ---
 import { NAV_LINKS, SITE_TITLE } from '../consts';
-
 const { pathname } = Astro.url;
 ---
 
-<header class="sticky top-0 z-40 backdrop-blur-xl bg-paper-50/80 border-b border-paper-200/60 shadow-soft">
-  <nav class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+<header class="sticky top-0 z-40 bg-bg/80 backdrop-blur-md hairline-b">
+  <nav class="max-w-page mx-auto px-6 sm:px-10 h-16 flex items-center justify-between">
     <a href="/" class="group flex items-center gap-2.5 select-none">
-      <span class="relative inline-flex items-center justify-center w-10 h-10 rounded-xl
-                   bg-gradient-to-br from-paper-100 to-paper-200 border border-paper-300/60
-                   shadow-soft transition-all duration-500
-                   group-hover:rotate-[18deg] group-hover:scale-110 group-hover:shadow-glow">
-        <span class="text-2xl">🍊</span>
-        <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-leaf-500 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-      </span>
-      <span class="flex flex-col leading-tight">
-        <span class="font-serif text-lg font-semibold text-ink-900 tracking-wide">{SITE_TITLE}</span>
-        <span class="font-hand text-sm text-paper-600 -mt-0.5">paper orange .</span>
+      <span class="accent-dot"></span>
+      <span class="font-display text-[1.35rem] text-ink-900 tracking-tight leading-none">
+        {SITE_TITLE}
       </span>
     </a>
 
-    <ul class="flex items-center gap-1 sm:gap-1.5">
+    <ul class="flex items-center gap-1 text-sm">
       {NAV_LINKS.map((link) => {
         const isActive = link.href === '/'
           ? pathname === '/'
@@ -30,26 +22,25 @@ const { pathname } = Astro.url;
             <a
               href={link.href}
               class:list={[
-                'relative px-3 sm:px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300 group',
-                isActive
-                  ? 'text-ink-900'
-                  : 'text-ink-500 hover:text-ink-900',
+                'relative inline-flex items-center px-3 py-2 transition-colors duration-300',
+                isActive ? 'text-ink-900' : 'text-ink-500 hover:text-ink-900',
               ]}
             >
-              {isActive && (
-                <span class="absolute inset-0 rounded-full bg-gradient-to-br from-paper-200 to-paper-300/80 shadow-soft -z-0"></span>
-              )}
-              <span class="relative z-10">{link.label}</span>
-              {!isActive && (
-                <span class="absolute inset-x-3 -bottom-0.5 h-[2px] rounded-full bg-paper-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
-              )}
+              {isActive && <span class="accent-dot mr-2 !w-1.5 !h-1.5 !shadow-none"></span>}
+              <span>{link.label}</span>
             </a>
           </li>
         );
       })}
+      <li class="ml-2 pl-3 border-l border-ink-200">
+        <a href="/rss.xml" class="text-ink-500 hover:text-accent transition-colors" aria-label="RSS">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 11a9 9 0 0 1 9 9"/>
+            <path d="M4 4a16 16 0 0 1 16 16"/>
+            <circle cx="5" cy="19" r="1"/>
+          </svg>
+        </a>
+      </li>
     </ul>
   </nav>
-
-  {/* decorative gradient bottom line */}
-  <div class="h-[1px] bg-gradient-to-r from-transparent via-paper-400/50 to-transparent"></div>
 </header>

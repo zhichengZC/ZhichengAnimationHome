@@ -8,15 +8,17 @@ interface Props {
   title?: string;
   description?: string;
   ogImage?: string;
+  wide?: boolean;
 }
 
 const {
   title = SITE_TITLE,
   description = SITE_DESCRIPTION,
   ogImage = '/og-image.png',
+  wide = false,
 } = Astro.props;
 
-const fullTitle = title === SITE_TITLE ? title : `${title} · ${SITE_TITLE}`;
+const fullTitle = title === SITE_TITLE ? title : `${title} — ${SITE_TITLE}`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 ---
 
@@ -32,6 +34,10 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <meta name="description" content={description} />
     <meta name="author" content="纸橙" />
 
+    <!-- Preconnect fonts for faster paint -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content={fullTitle} />
@@ -39,18 +45,17 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:image" content={new URL(ogImage, Astro.url)} />
 
-    <!-- Sitemap/RSS -->
+    <!-- Sitemap / RSS -->
     <link rel="sitemap" href="/sitemap-index.xml" />
     <link rel="alternate" type="application/rss+xml" title={SITE_TITLE} href="/rss.xml" />
   </head>
   <body>
     <Header />
-    <main class="max-w-5xl mx-auto px-6 py-10 min-h-[60vh]">
+    <main class={`${wide ? 'max-w-page' : 'max-w-5xl'} mx-auto px-6 sm:px-10 pt-12 pb-24 min-h-[60vh]`}>
       <slot />
     </main>
     <Footer />
 
-    <!-- Global intersection-observer for .reveal elements -->
     <script is:inline>
       (() => {
         const io = new IntersectionObserver((entries) => {
@@ -60,8 +65,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
               io.unobserve(e.target);
             }
           });
-        }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
         const observe = () => document.querySelectorAll('.reveal:not(.is-visible)').forEach((el) => io.observe(el));
         observe();
         document.addEventListener('astro:after-swap', observe);

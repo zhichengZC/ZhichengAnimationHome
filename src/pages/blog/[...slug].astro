@@ -15,41 +15,96 @@ const { post } = Astro.props;
 const { Content } = await post.render();
 const { title, description, pubDate, updatedDate, tags } = post.data;
 
-const fmt = (d: Date) => d.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+const rawBody = post.body || '';
+const readMin = Math.max(1, Math.round(rawBody.length / 400));
+const wordCount = rawBody.length;
+
+const fmt = (d: Date) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}.${m}.${day}`;
+};
 ---
 
 <BaseLayout title={title} description={description}>
-  <article class="py-6 max-w-3xl mx-auto">
-    <header class="mb-10 animate-fade-in-up">
-      <div class="flex flex-wrap items-center gap-2 text-xs text-ink-500 mb-4">
-        <time datetime={pubDate.toISOString()}>{fmt(pubDate)}</time>
-        {updatedDate && <><span>·</span><span>更新于 {fmt(updatedDate)}</span></>}
-      </div>
-      <h1 class="font-serif text-4xl sm:text-5xl font-bold text-ink-900 leading-tight mb-4">
-        {title}
-      </h1>
-      {description && (
-        <p class="text-lg text-ink-500 leading-relaxed">{description}</p>
-      )}
+  <article class="pt-4 sm:pt-10 pb-24">
+    {/* Breadcrumb / back */}
+    <div class="mb-12">
+      <a href="/blog" class="link text-sm text-ink-500">
+        <span aria-hidden>←</span>
+        <span>All writing</span>
+      </a>
+    </div>
+
+    {/* Masthead */}
+    <header class="mb-16">
       {tags.length > 0 && (
-        <div class="flex gap-2 flex-wrap mt-5">
-          {tags.map((t) => <span class="tag">#{t}</span>)}
+        <div class="font-mono text-[11px] uppercase tracking-widest text-ink-500 mb-5">
+          {tags.map((t, i) => (
+            <>
+              {i > 0 && <span class="mx-2 text-ink-300">/</span>}
+              <span>{t}</span>
+            </>
+          ))}
         </div>
       )}
-      <div class="mt-8 h-px bg-gradient-to-r from-transparent via-paper-300 to-transparent" />
+
+      <h1 class="display text-display-lg mb-8">
+        {title}
+      </h1>
+
+      {description && (
+        <p class="font-serif text-xl sm:text-2xl text-ink-500 leading-relaxed max-w-prose-wide">
+          {description}
+        </p>
+      )}
+
+      <div class="mt-10 hairline-t pt-5 flex flex-wrap gap-x-10 gap-y-3 font-mono text-[11px] uppercase tracking-widest text-ink-500">
+        <div>
+          <span class="text-ink-300 mr-2">Published</span>
+          <time datetime={pubDate.toISOString()} class="text-ink-700 tabular-nums">{fmt(pubDate)}</time>
+        </div>
+        {updatedDate && (
+          <div>
+            <span class="text-ink-300 mr-2">Updated</span>
+            <time class="text-ink-700 tabular-nums">{fmt(updatedDate)}</time>
+          </div>
+        )}
+        <div>
+          <span class="text-ink-300 mr-2">Reading</span>
+          <span class="text-ink-700 tabular-nums">{readMin} min · {wordCount.toLocaleString()} chars</span>
+        </div>
+      </div>
     </header>
 
-    <div class="prose-paper animate-fade-in" style="animation-delay: 0.2s; animation-fill-mode: both;">
+    {/* Body */}
+    <div class="prose-editorial max-w-prose-wide animate-fade" style="animation-delay: 0.1s;">
       <Content />
     </div>
 
-    <footer class="mt-16 pt-8 border-t border-paper-200 flex items-center justify-between reveal">
-      <a href="/blog" class="btn-ghost">
-        <span>←</span><span>返回文章列表</span>
-      </a>
-      <a href="#" class="text-sm text-ink-500 hover:text-paper-600 transition-colors">
-        回到顶部 ↑
-      </a>
+    {/* Footer */}
+    <footer class="mt-20 max-w-prose-wide">
+      <div class="hairline-t pt-6 mb-12 flex items-center justify-between font-mono text-[11px] uppercase tracking-widest text-ink-500">
+        <span>End of article</span>
+        <span class="accent-dot"></span>
+        <a href="#top" class="hover:text-accent transition-colors">Back to top ↑</a>
+      </div>
+
+      <div class="grid grid-cols-12 gap-4">
+        <a href="/blog" class="col-span-12 sm:col-span-6 hairline-t pt-5 group">
+          <p class="eyebrow mb-2">— Continue reading</p>
+          <p class="font-display text-3xl text-ink-900 group-hover:text-accent transition-colors">
+            All writing <span class="link-arrow inline-block">→</span>
+          </p>
+        </a>
+        <a href="/" class="col-span-12 sm:col-span-6 hairline-t pt-5 group">
+          <p class="eyebrow mb-2">— Back home</p>
+          <p class="font-display text-3xl text-ink-900 group-hover:text-accent transition-colors">
+            Home <span class="link-arrow inline-block">↖</span>
+          </p>
+        </a>
+      </div>
     </footer>
   </article>
 </BaseLayout>

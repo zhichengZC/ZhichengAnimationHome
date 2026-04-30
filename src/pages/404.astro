@@ -2,26 +2,30 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="页面走丢啦">
-  <section class="py-24 text-center relative">
-    <div class="absolute inset-0 -z-10 pointer-events-none flex items-center justify-center">
-      <div class="font-serif font-black text-paper-200/50 text-[18rem] leading-none select-none">404</div>
+<BaseLayout title="Not Found" wide={true}>
+  <section class="min-h-[70vh] flex flex-col justify-center py-20">
+    <div class="flex items-center justify-between mb-12 font-mono text-[11px] uppercase tracking-widest text-ink-500">
+      <span>§ Error</span>
+      <span>Status 404</span>
     </div>
 
-    <div class="text-8xl mb-6 inline-block animate-wobble-in">🍊</div>
-    <p class="font-hand text-3xl text-paper-600 mb-2">oops...</p>
-    <h1 class="font-serif text-4xl sm:text-5xl font-bold text-ink-900 mb-3">页面走丢啦</h1>
-    <p class="text-ink-500 mb-10 max-w-md mx-auto leading-relaxed">
-      小橙子在果园里找不到这个页面，也许它被风吹走了？
+    <h1 class="display text-display-xl">
+      <span class="block text-ink-200">404</span>
+      <span class="block">Not <span class="display-italic text-accent">found</span>.</span>
+    </h1>
+
+    <p class="mt-12 font-serif text-xl sm:text-2xl text-ink-700 max-w-lg leading-relaxed">
+      这一页被风吹走了，或者从未存在过。
       <br />
-      要不咱们回到起点重新出发吧 ～
+      但没关系，我们还有很多别的可以看。
     </p>
-    <div class="flex gap-3 justify-center flex-wrap">
-      <a href="/" class="btn-primary btn-shine">
-        <span>←</span><span>回到首页</span>
+
+    <div class="mt-10 flex flex-wrap gap-3">
+      <a href="/" class="btn-primary">
+        <span>返回首页</span><span aria-hidden>→</span>
       </a>
       <a href="/blog" class="btn-ghost">
-        <span>📖</span><span>去看看文章</span>
+        <span>去读文章</span><span aria-hidden>→</span>
       </a>
     </div>
   </section>
