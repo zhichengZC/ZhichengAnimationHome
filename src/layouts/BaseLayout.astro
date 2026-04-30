@@ -20,6 +20,7 @@ const {
 
 const fullTitle = title === SITE_TITLE ? title : `${title} — ${SITE_TITLE}`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <!DOCTYPE html>
@@ -28,34 +29,65 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
     <link rel="canonical" href={canonicalURL} />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <meta name="author" content="纸橙" />
 
-    <!-- Preconnect fonts for faster paint -->
+    {/* ===== FOUC-safe theme init (must run inline, synchronously) ===== */}
+    <script is:inline>
+      (function () {
+        try {
+          var stored = localStorage.getItem('theme');
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var theme = stored || (prefersDark ? 'dark' : 'light');
+          document.documentElement.classList.toggle('dark', theme === 'dark');
+          document.documentElement.classList.toggle('light', theme === 'light');
+        } catch (e) {}
+      })();
+    </script>
+
+    {/* Preconnect fonts */}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    <!-- Open Graph -->
+    {/* Open Graph */}
     <meta property="og:type" content="website" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:image" content={new URL(ogImage, Astro.url)} />
 
-    <!-- Sitemap / RSS -->
-    <link rel="sitemap" href="/sitemap-index.xml" />
-    <link rel="alternate" type="application/rss+xml" title={SITE_TITLE} href="/rss.xml" />
+    {/* Theme color for browser chrome */}
+    <meta name="theme-color" content="#FAF6EE" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#16141A" media="(prefers-color-scheme: dark)" />
+
+    {/* Sitemap / RSS */}
+    <link rel="sitemap" href={`${base}/sitemap-index.xml`} />
+    <link rel="alternate" type="application/rss+xml" title={SITE_TITLE} href={`${base}/rss.xml`} />
   </head>
   <body>
+    {/* Ambient paper pattern & drifting blobs (quiet dynamic background) */}
+    <div class="paper-pattern" aria-hidden="true"></div>
+    <div class="paper-vignette" aria-hidden="true"></div>
+
+    {/* Scroll progress */}
+    <div class="scroll-progress" id="scrollProgress"></div>
+
+    {/* Custom cursor (desktop only via CSS media query) */}
+    <div class="cursor-ring" id="cursorRing" aria-hidden="true"></div>
+    <div class="cursor-dot"  id="cursorDot"  aria-hidden="true"></div>
+
     <Header />
-    <main class={`${wide ? 'max-w-page' : 'max-w-5xl'} mx-auto px-6 sm:px-10 pt-12 pb-24 min-h-[60vh]`}>
+
+    <main class={`${wide ? 'w-full max-w-[1760px]' : 'max-w-page-sm'} mx-auto px-6 sm:px-10 lg:px-14 xl:px-20 pt-10 pb-24 min-h-[60vh]`}>
       <slot />
     </main>
+
     <Footer />
 
+    {/* ===== Reveal-on-scroll ===== */}
     <script is:inline>
       (() => {
         const io = new IntersectionObserver((entries) => {
@@ -69,6 +101,84 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         const observe = () => document.querySelectorAll('.reveal:not(.is-visible)').forEach((el) => io.observe(el));
         observe();
         document.addEventListener('astro:after-swap', observe);
+      })();
+    </script>
+
+    {/* ===== Click ripple + scroll-driven hero scale ===== */}
+    <script is:inline>
+      (() => {
+        // 1) Ripple on click anywhere (desktop)
+        if (!window.matchMedia('(hover: none)').matches) {
+          document.addEventListener('click', (e) => {
+            const r = document.createElement('span');
+            r.className = 'ripple';
+            r.style.left = e.clientX + 'px';
+            r.style.top  = e.clientY + 'px';
+            document.body.appendChild(r);
+            setTimeout(() => r.remove(), 750);
+          });
+        }
+
+        // 2) Scroll-driven Hero scale/opacity (reads .hero-scale)
+        const hero = document.querySelector('.hero-scale');
+        if (hero) {
+          let raf = 0;
+          const apply = () => {
+            const y = window.scrollY;
+            const max = 500;
+            const t = Math.min(1, y / max);
+            // stronger: scale 1 -> 0.72, opacity 1 -> 0.12, translateY -90, blur 0 -> 5
+            const scale   = 1 - t * 0.28;
+            const opacity = 1 - t * 0.88;
+            const ty      = -t * 90;
+            const blur    = t * 5;
+            hero.style.setProperty('--hero-scale',   scale.toFixed(4));
+            hero.style.setProperty('--hero-opacity', opacity.toFixed(3));
+            hero.style.setProperty('--hero-ty',      ty.toFixed(2) + 'px');
+            hero.style.setProperty('--hero-blur',    blur.toFixed(2) + 'px');
+            raf = 0;
+          };
+          window.addEventListener('scroll', () => {
+            if (!raf) raf = requestAnimationFrame(apply);
+          }, { passive: true });
+          apply();
+        }
+
+        // 3) Scroll-reveal for sequential fades
+        document.querySelectorAll('[data-reveal-seq] > *').forEach((el, i) => {
+          el.classList.add('reveal');
+          el.style.transitionDelay = (i * 0.06) + 's';
+        });
+      })();
+    </script>
+
+    {/* ===== Custom cursor (desktop only) ===== */}
+    <script is:inline>
+      (() => {
+        if (window.matchMedia('(hover: none)').matches) {
+          document.body.classList.add('cursor-hide');
+          return;
+        }
+        const dot = document.getElementById('cursorDot');
+        if (!dot) return;
+        document.body.classList.add('cursor-hide');
+
+        // body has `overflow-x: hidden`, which turns body into a containing
+        // block for position:fixed children (bug: cursor lags on scroll).
+        // Move the dot out to <html> so fixed positioning references the viewport again.
+        document.documentElement.appendChild(dot);
+
+        window.addEventListener('mousemove', (e) => {
+          dot.style.transform =
+            `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`;
+          document.body.classList.remove('cursor-hide');
+        }, { passive: true });
+        window.addEventListener('mouseleave', () => document.body.classList.add('cursor-hide'));
+        window.addEventListener('mouseenter', () => document.body.classList.remove('cursor-hide'));
+
+        const hoverSel = 'a, button, [data-cursor-hover], input, textarea, .cursor-hover, label';
+        document.addEventListener('mouseover', (e) => { if (e.target.closest(hoverSel)) document.body.classList.add('cursor-hover'); });
+        document.addEventListener('mouseout',  (e) => { if (e.target.closest(hoverSel)) document.body.classList.remove('cursor-hover'); });
       })();
     </script>
   </body>

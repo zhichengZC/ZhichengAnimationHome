@@ -12,70 +12,89 @@ const grouped = posts.reduce((acc, p) => {
   return acc;
 }, {} as Record<number, typeof posts>);
 const years = Object.keys(grouped).map(Number).sort((a, b) => b - a);
-
 const allTags = Array.from(new Set(posts.flatMap((p) => p.data.tags))).sort();
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <BaseLayout title="Writing" wide={true}>
-  <section class="pt-8 sm:pt-16 pb-20">
-    {/* Masthead */}
-    <div class="flex items-center justify-between mb-10 font-mono text-[11px] uppercase tracking-widest text-ink-500">
-      <span>§ Archive</span>
-      <span>{posts.length.toString().padStart(3, '0')} entries</span>
-    </div>
 
-    <h1 class="display text-display-xl">
-      <span class="block">All the</span>
-      <span class="block display-italic text-accent">writing.</span>
-    </h1>
+  <section class="pt-16 sm:pt-24 pb-16">
+    <div class="grid grid-cols-12 gap-8 lg:gap-16 items-start">
 
-    <div class="mt-10 grid grid-cols-12 gap-6">
-      <p class="col-span-12 sm:col-span-6 sm:col-start-2 font-serif text-xl text-ink-700 leading-relaxed">
-        按时间倒序排列的所有文章。点击进入任意一篇，或在下方按标签索引。
-      </p>
-    </div>
-
-    {/* Tag index */}
-    {allTags.length > 0 && (
-      <div class="mt-12 hairline-t pt-6">
-        <p class="eyebrow mb-3">— Topics</p>
-        <div class="flex flex-wrap gap-x-6 gap-y-2 font-mono text-[12px] uppercase tracking-widest">
-          {allTags.map((t) => (
-            <a href={`#tag-${t}`} class="text-ink-500 hover:text-accent transition-colors">
-              {t}
-            </a>
-          ))}
+      <div class="col-span-12 lg:col-span-8">
+        <div class="flex items-center gap-3 mb-10">
+          <span class="font-mono text-[10.5px] uppercase tracking-[0.24em] text-ink-500">— Writing</span>
+          <span class="h-px flex-1 max-w-[60px] bg-ink-200"></span>
+          <span class="font-mono text-[10.5px] uppercase tracking-[0.24em] text-ink-300">№ 02</span>
         </div>
+
+        <h1 class="font-display leading-[1] text-[clamp(2.5rem,7vw,6rem)] tracking-[-0.035em] text-ink-900">
+          All the <span class="display-italic text-accent">writing</span>,
+          <br/>collected here<span class="text-accent">.</span>
+        </h1>
+
+        <p class="mt-10 max-w-[44ch] font-serif text-lg text-ink-500 leading-[1.75]">
+          按时间倒序排列。有的长，有的短，都是慢慢写下的。
+        </p>
       </div>
-    )}
+
+      <aside class="col-span-12 lg:col-span-4 lg:pt-4 space-y-8">
+        <div class="hairline-t pt-4 grid grid-cols-3 gap-2 font-mono text-[10.5px] uppercase tracking-[0.18em]">
+          <div>
+            <p class="text-ink-300">Entries</p>
+            <p class="mt-1 font-display text-2xl tabular-nums text-ink-900 tracking-tight">{String(posts.length).padStart(2,'0')}</p>
+          </div>
+          <div>
+            <p class="text-ink-300">Topics</p>
+            <p class="mt-1 font-display text-2xl tabular-nums text-ink-900 tracking-tight">{String(allTags.length).padStart(2,'0')}</p>
+          </div>
+          <div>
+            <p class="text-ink-300">Years</p>
+            <p class="mt-1 font-display text-2xl tabular-nums text-ink-900 tracking-tight">{String(years.length).padStart(2,'0')}</p>
+          </div>
+        </div>
+
+        {allTags.length > 0 && (
+          <div class="hairline-t pt-4">
+            <p class="eyebrow mb-3">Topics</p>
+            <div class="flex flex-wrap gap-x-4 gap-y-1.5 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-500">
+              {allTags.map((t) => (
+                <a href={`#tag-${t}`} class="link"><span>{t}</span></a>
+              ))}
+            </div>
+          </div>
+        )}
+      </aside>
+    </div>
   </section>
 
-  {/* ============ Entries by year ============ */}
   {posts.length === 0 ? (
-    <div class="py-24 text-center hairline-t">
-      <p class="font-serif text-2xl text-ink-500">
-        尚未开始 · <span class="display-italic">coming soon</span>
+    <div class="py-20 hairline-t">
+      <p class="font-serif text-lg text-ink-500">
+        还没有文章 · <span class="display-italic">nothing yet</span>
       </p>
     </div>
   ) : (
-    <div class="space-y-20">
-      {years.map((year) => (
-        <section class="relative">
-          <div class="flex items-end justify-between mb-2 reveal">
-            <h2 class="display text-display-lg text-ink-900 leading-none">
-              {year}
-            </h2>
-            <span class="font-mono text-[11px] uppercase tracking-widest text-ink-500 pb-2">
-              {grouped[year].length} {grouped[year].length > 1 ? 'entries' : 'entry'}
-            </span>
-          </div>
-          <div class="hairline-t">
-            {grouped[year].map((post, i) => (
-              <PostCard post={post} index={i + 1} />
-            ))}
-          </div>
-        </section>
-      ))}
+    <div class="grid grid-cols-12 gap-8 lg:gap-16">
+      <div class="col-span-12 lg:col-span-8 space-y-16">
+        {years.map((year) => (
+          <section>
+            <div class="flex items-baseline justify-between mb-2 reveal hairline-t pt-6">
+              <h2 class="font-display text-4xl sm:text-5xl text-ink-900 leading-none">{year}</h2>
+              <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-500">
+                {grouped[year].length} {grouped[year].length > 1 ? 'entries' : 'entry'}
+              </span>
+            </div>
+            <div>
+              {grouped[year].map((post, i) => (
+                <PostCard post={post} index={i + 1} />
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+      <aside class="hidden lg:block col-span-4"></aside>
     </div>
   )}
 </BaseLayout>

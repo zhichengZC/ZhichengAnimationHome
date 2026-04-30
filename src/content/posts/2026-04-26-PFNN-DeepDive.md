@@ -1,0 +1,716 @@
+---
+title: "Phase-Functioned Neural Networks (PFNN) — 跟着 Holden 2017 论文读一遍"
+description: "跟着 SIGGRAPH 2017 的 PFNN 论文章节顺序，从头到尾读一遍这篇角色动画神经网络的奠基作。"
+pubDate: 2026-04-26
+tags: [动画, 神经网络, PFNN, 论文阅读]
+---
+
+# Phase-Functioned Neural Networks (PFNN) — 跟着 Holden 2017 论文读一遍
+
+> **日期**：2026-04-26
+> **主题**：Phase-Functioned Neural Networks for Character Control (Holden et al., SIGGRAPH 2017)
+> **目标读者**：动画 TA 实习生（已学完神经网络基础、监督学习）
+> **本文定位**：**跟着论文章节顺序**从头到尾读一遍这篇奠基作。读完你能：
+> (a) 理解为什么 PFNN 当年那么惊艳
+> (b) 动手在 UE / Unity 里用自己的动捕数据训一个最小版 PFNN
+> (c) 看懂 MANN / NSM / DeepPhase 这些后辈在解决 PFNN 的什么痛点
+
+---
+
+## 🗺️ 阅读指南
+
+本文**不做百科全书**，只做一件事：**跟读 Holden 2017 论文**。
+
+### L-Grading
+
+| 章节 | 等级 | Hand-calc |
+|---|---|---|
+| §0 论文定位 + 前置 | L0 核心 | — |
+| §1 Holden 吐槽之前方法在哪失败 | L0 核心 | — |
+| §2 Phase 这个点子怎么冒出来 | L0 核心 | — |
+| §3 4 专家 + Cubic Catmull-Rom 混合 | L0 核心 | ✓ |
+| §4 数据 pipeline（phase 标注 / trajectory） | L0 核心 | — |
+| §5 运行时一帧的完整流程 | L0 核心 | ✓ |
+| §6 Demo 效果与论文实验 | L1 扩展 | — |
+| §7 从 PFNN 到 MANN / NSM / DeepPhase | L1 扩展 | — |
+| §8 TA 的复现建议（实践侧） | L1 扩展 | — |
+| §9 下节预告 + 学习清单 | L0 核心 | — |
+
+### 🎯 TA 阅读路线
+
+- 🏃 **只读 L0**（约 70 分钟）：§0-§5 + §9 + 十题
+- 🚶 **L0 + L1**（约 100 分钟）：加上 §6 §7 §8 —— 真正指导你上手复现
+- 🧗 **全部**（约 110 分钟）：纯读文献级深度
+
+---
+
+## §0 论文定位 + 前置 [L0 核心]
+
+### 0.1 论文是谁写的、什么时间
+
+**Holden, Komura, Saito. "Phase-Functioned Neural Networks for Character Control."** ACM Transactions on Graphics, **SIGGRAPH 2017**.
+
+- 主作者 Daniel Holden 当时在爱丁堡大学读博（导师 Taku Komura），现就职 Ubisoft La Forge 研究所
+- 论文页：http://theorangeduck.com/page/phase-functioned-neural-networks-character-control （作者亲自写的介绍）
+- 开源代码：同一页提供 PyTorch + Theano 两个实现
+
+### 0.2 为什么说它是"奠基作"
+
+2017 年前，角色控制有两条路：
+- **Motion Matching (Clavet 2016)**：把大量动捕数据切片存内存，运行时查最匹配的片段
+  - 问题：内存 200-500 MB，泛化差（没见过的步态会撞墙）
+- **RNN / MLP 直接回归**：学 pose_t → pose_{t+1}
+  - 问题：误差累积、输出抖动严重
+
+PFNN 是**第一个**用**循环先验**（phase）解决"循环步态"问题的神经网络方法，内存压到 10 MB，质量追平甚至超过 Motion Matching。**它开启了 AI4Animation 这个子领域**，后续 MANN / NSM / DeepPhase 都是它的延伸。
+
+很多商业游戏（《荒野大镖客 2》的马匹动画、《看门狗：军团》的 NPC、UE5 的 Motion Matching 扩展）底层思路都受 PFNN 影响。
+
+### 0.3 你需要的前置（都已学过）
+
+| 前置 | 需要到什么程度 |
+|---|---|
+| MLP / 全连接网络 | 会写前向传播、反向传播（已学） |
+| 激活函数 | 知道 ReLU / tanh 的区别（已学） |
+| 监督学习 | 知道"输入-输出对 + MSE loss"（已学） |
+| Motion 数据基础 | 知道关节旋转、骨骼层次（TA 本职） |
+
+不需要：Transformer、Diffusion、VQ-VAE。**PFNN 是 2017 的论文，用的都是 MLP 时代的工具。**
+
+![[images/fig1.png]]
+
+*图 1：PFNN 在动画 AI 版图中的位置。左边是"数据驱动"路线（Motion Matching → PFNN → MANN → NSM → DeepPhase），右边是"物理驱动"路线（DeepMimic → AMP → ASE）。PFNN 是数据驱动路线的起点，2017 年后几乎所有角色控制 ML 方法都能追溯到它。*
+
+---
+
+## §1 Holden 吐槽之前方法在哪失败 [L0 核心]
+
+> **问题先行**：你用 RNN 学走路数据，角色走两步就抖成鬼，为什么？
+
+### 1.1 RNN 路线的"误差累积"
+
+**RNN 的思路**：
+```
+pose_{t+1} = f(pose_t, hidden_t)
+```
+
+你给它一段走路动捕，它学会"当前 pose + 隐状态 → 下一 pose"。训练时 loss 很小，但推理时：
+
+- 第 1 帧：pose_1 → pose_2，误差 0.01
+- 第 2 帧：pose_2 → pose_3，误差 0.015（因为 pose_2 本身已有误差）
+- 第 10 帧：pose_10 已经累积了较大误差，输出看起来就不像走路了
+- 第 50 帧：角色开始乱动
+
+**本质**：RNN 没有"全局的循环先验"，它不知道"走路是周期性的，每 24 帧应该回到同一个 pose"。它只学到了"短期局部模式"，不知道"长期循环结构"。
+
+### 1.2 MLP 直接回归的"平均崩塌"
+
+**MLP 的思路**：
+```
+pose_{t+1} = f(pose_t, trajectory)
+```
+
+把当前 pose + 未来要走的轨迹喂给 MLP，直接预测下一 pose。
+
+**问题**：训练数据里，**同一个 pose** 可能对应多个合理的"下一 pose"（因为同一姿势可能处于步态不同相位）。MLP 学的是**平均**，结果角色动作看起来"介于迈左脚和迈右脚之间"——**平均崩塌**。
+
+**数学直觉**：MLP 在多模态分布上训练，只能产生"均值"输出。走路是双峰的（左脚一相、右脚一相），均值是"两脚都悬空"——这种姿势不存在于真实走路。
+
+### 1.3 Motion Matching 的代价
+
+**Motion Matching**（2016 Ubisoft 的经典方法）不是 ML，是一种"大数据库查询"：
+- 把所有动捕切成 1-2 秒的小片段（约 10-100 万片段）
+- 每片段标注 features（pose / velocity / trajectory）
+- 运行时计算"当前状态 + 未来需求"到每个片段的距离，选最近的那个
+
+**优点**：质量很好（因为直接用真实动捕）
+**缺点**：
+- 内存 200-500 MB（整个数据库常驻）
+- 泛化差（没见过的步态撞墙）
+- 不能处理"连续控制"（只能在片段边界切换）
+
+### 1.4 Holden 的洞察
+
+> **走路是循环的**（cyclic）。一个好的角色控制器应该知道"自己在周期哪里"，而不是盲目地从当前 pose 推下一 pose。
+
+这就是 **phase** 这个关键变量的动机。
+
+![[images/fig2.png]]
+
+*图 2：RNN / MLP 在循环步态上为什么抖。RNN 有误差累积问题；MLP 在同一 pose 对应多种下一 pose 时只能学平均，结果输出"左右脚都悬空"的不真实姿势。*
+
+### 1.5 本章自测
+
+<details>
+<summary>为什么 RNN 在长序列上比短序列更容易出问题？</summary>
+
+因为 RNN 的 hidden state 是逐帧递推的，每帧的小误差都会被下一帧"继承+放大"。短序列（10 帧）累积误差还可控，长序列（100 帧）就完全漂移了。这也是 Transformer 后来取代 RNN 的一个原因——attention 每一步都能"直接看到原始输入"，不依赖逐帧递推。
+
+</details>
+
+---
+
+## §2 Phase 这个点子是怎么冒出来的 [L0 核心]
+
+> **问题先行**：如果网络知道"我现在在步态周期的哪一相"，它该怎么选权重？
+
+### 2.1 Phase 的定义
+
+**Phase φ ∈ [0, 2π]**：一个标量变量，表示当前处于步态周期的哪一相位。
+
+约定：
+- **φ = 0**：右脚刚触地（right foot strike）
+- **φ = π/2**：右脚完全承重、左脚离地摆动
+- **φ = π**：左脚刚触地（left foot strike）
+- **φ = 3π/2**：左脚完全承重、右脚离地摆动
+- **φ 回到 2π = 0**：下一个循环开始
+
+### 2.2 直觉类比：时钟、车轮、音乐拍子
+
+想象一个**时钟**：时钟的指针每 12 小时转一圈，每一时刻都对应表盘上一个确定位置。phase 就像时钟的指针——它告诉你"当前处于循环中的哪里"。
+
+- 时钟指针：2π → 时间
+- 车轮转动：2π → 车轮一圈
+- 音乐节拍：2π → 一小节
+- **走路 phase**：2π → 一个完整步态循环（左右两步）
+
+### 2.3 Phase 给网络带来了什么
+
+没有 phase 时：
+```
+输入：(当前 pose, trajectory)
+→ 网络有歧义：不知道当前是"迈左脚"还是"迈右脚"
+```
+
+有 phase 后：
+```
+输入：(当前 pose, trajectory, phase=π/4)
+→ 网络明确：当前是"右脚承重中段"，该出的下一 pose 唯一
+```
+
+**关键**：phase 把"多模态歧义"变成"单模态确定"。这就是 PFNN 为什么能避免 MLP 的平均崩塌。
+
+![[images/fig3.png]]
+
+*图 3：Phase 作为循环先验。φ 从 0 到 2π 完成一个步态循环，每个 phase 值对应一个明确的步态阶段（右脚触地 / 摆动 / 左脚触地 / 摆动）。有了这个标量，网络不再歧义。*
+
+### 2.4 但 phase 要怎么"用"？
+
+最简单的想法：把 phase 作为额外的输入维度，塞进 MLP。
+
+```
+输入：(pose, trajectory, phase) → MLP → 下一 pose
+```
+
+**实测问题**：phase 只是一个标量，MLP 会把它当成普通数值，不会自然地"利用循环结构"。训练结果比不加 phase 好一点，但远远不够。
+
+**Holden 的真正创新**：不把 phase 当输入，而是**让 phase 直接控制网络的权重**。这就是下一节的 4 专家网络。
+
+### 2.5 本章自测
+
+<details>
+<summary>为什么 phase 用 [0, 2π] 而不是 [0, 1]？</summary>
+
+数学上两者等价（都能表示循环）。但 [0, 2π] 更符合**周期信号的数学惯例**（傅里叶、正弦余弦），后面 PFNN 其实就用了 `sin(φ)` / `cos(φ)` 来表示 phase（避免 0 和 2π 处的"跳变"）。
+
+</details>
+
+---
+
+## §3 4 个专家 + Cubic Catmull-Rom 混合 [L0 核心] ⭐
+
+> **问题先行**：假设在 phase = π/2 时应该用"半周期的权重"，这组权重从哪来？
+
+### 3.1 核心构思：权重也是 phase 的函数
+
+普通 MLP：权重 W 是固定的（训练完就不变）
+```
+y = W · x + b
+```
+
+**PFNN 的关键创新**：权重 W **是 phase 的函数**
+```
+y = W(φ) · x + b(φ)
+```
+
+**意思**：不同 phase 下，网络是"不同的网络"。
+- φ=0（右脚触地）：网络学"怎么从右脚触地做摆动"
+- φ=π/2（右脚承重）：网络学"怎么从右脚承重做前进"
+- φ=π（左脚触地）：...
+- φ=3π/2（左脚承重）：...
+
+### 3.2 具体怎么"参数化为 phase 的函数"
+
+最naive的想法：存 K 个 phase 值对应 K 个权重矩阵，用时查最近的。**问题**：phase 是连续的，离散查找会造成"权重跳变"，动作会抖。
+
+**Holden 的做法**：用**4 个"专家"**（experts），每个专家是一个完整的 MLP 权重矩阵，分别对应 4 个关键 phase：
+- **Expert 0**：φ = 0
+- **Expert 1**：φ = π/2
+- **Expert 2**：φ = π
+- **Expert 3**：φ = 3π/2
+
+任意 φ 处的权重 = 这 4 个专家的**平滑插值**。
+
+```
+W(φ) = interpolate(Expert 0, Expert 1, Expert 2, Expert 3, φ)
+b(φ) = interpolate(专家们的 b, φ)
+```
+
+### 3.3 为什么是 Cubic Catmull-Rom 插值
+
+**需求**：我们需要一种插值方法，满足：
+1. **过关键点**：φ = 0, π/2, π, 3π/2 时，W(φ) 恰好等于对应专家
+2. **周期平滑**：φ 从 2π- 到 0+ 过渡时必须连续平滑（不然每次循环开始都会抖）
+3. **计算便宜**：运行时每帧要算一次，不能太贵
+
+**Cubic Catmull-Rom 正好满足**：
+- 给定 4 个控制点（就是 4 个专家），它产生一条过中间两个点的 3 次曲线
+- 两端自然对接，形成周期循环
+- 计算量：每次只需 ~20 次乘加（相比 16 个专家 + 神经网络权重学习那种复杂方案，便宜好几个数量级）
+
+**论文具体公式**（不推导，只给结果）：
+$$W(\varphi) = 0.5 \cdot \mathbf{w}^T(\varphi) \cdot \begin{pmatrix} W_0 \\ W_1 \\ W_2 \\ W_3 \end{pmatrix}$$
+
+其中 $\mathbf{w}(\varphi)$ 是基于 $\varphi$ 的 4 维权重向量，具体元素是 3 次多项式（论文 Eq.6）。**你只需要知道**：给定 φ，能算出 4 个数 (w_0, w_1, w_2, w_3)，总和为 1，过关键点时 w_i = 1, 其他 = 0。
+
+![[images/fig4.png]]
+
+*图 4：4 专家 + Cubic Catmull-Rom 的插值混合。4 个专家各占据一个关键 phase（0 / π/2 / π / 3π/2），任意 phase 处的实际权重是 4 个专家权重的 Catmull-Rom 插值。曲线保证过关键点、周期平滑、计算便宜。*
+
+### 3.4 Hand-calc 1 —— 给定 phase 算 4 专家权重 🔢
+
+**题目**：假设 φ = π/4（在右脚触地和右脚承重中间）。求 4 专家的混合权重。
+
+**直觉推导**（不用代入闭式公式）：
+- φ = π/4 更接近 Expert 1（φ = π/2），但离 Expert 0（φ = 0）也不远
+- 所以 Expert 0 和 Expert 1 的权重都较高，Expert 2 (φ = π) 和 Expert 3 (φ = 3π/2) 的权重较低（几乎为负或 0）
+
+**论文公式代入结果**（大致）：
+- w_0（Expert 0） ≈ 0.5
+- w_1（Expert 1） ≈ 0.6
+- w_2（Expert 2） ≈ -0.1
+- w_3（Expert 3） ≈ 0.0
+
+**注意**：Catmull-Rom 的插值权重**允许负值**（这是 3 次多项式的特性），相比线性插值能保持更平滑的过渡。负值只是"少量反向修正"，不会让最终权重变得不合理。
+
+**最终 W(π/4)**：
+$$W(\pi/4) = 0.5 \cdot W_0 + 0.6 \cdot W_1 - 0.1 \cdot W_2 + 0.0 \cdot W_3$$
+
+![[images/fig5.png]]
+
+*图 5：Catmull-Rom 插值权重随 phase 变化的曲线。4 条曲线分别是 4 个专家的权重随 phase 的变化。在关键 phase 处某一条 = 1 其他 = 0，之间光滑过渡，允许短暂的负值（保证曲线通过所有关键点的特性）。*
+
+### 3.5 为什么是 4 个专家不是 2 个或 8 个？
+
+- **2 个专家**：只能线性插值，曲线过渡不够自然（和普通 phase-as-input 的 MLP 差别不大）
+- **4 个专家**：保证 Cubic Catmull-Rom 成立（需要 4 个控制点做 3 次曲线）；覆盖步态 4 个关键相位
+- **8 个专家**：需要 2 套 Catmull-Rom 或更高次插值；内存翻倍但质量提升有限（论文做了消融实验，4 专家已接近饱和）
+
+### 3.6 章末自测
+
+<details>
+<summary>4 专家总共需要存多少权重？如果每个专家的 MLP 是 3 层 × 512 hidden，估算总参数量。</summary>
+
+单专家：3 层 FC，每层 512×512 ≈ 260k 参数 → 3 层 ≈ 780k 参数
+4 专家：~ 3.1M 参数
+存储（float32）：~ 12 MB
+
+加上输入层（输入 342 维 → 512）、输出层（512 → 311 维），总规模约 10 MB（论文实测）。
+
+</details>
+
+<details>
+<summary>如果 Catmull-Rom 插值权重出现负值，最终 W(φ) 不会变"奇怪"吗？</summary>
+
+不会。负的插值权重只是"从邻近专家反向扣一点"的数学技巧，最终的 W(φ) 矩阵数值仍是正常范围。这是 3 次多项式插值的固有特性，不是 bug。
+
+</details>
+
+---
+
+## §4 数据 pipeline [L0 核心]
+
+> **问题先行**：动捕数据哪来 phase 标签？作者怎么给每一帧标 φ？
+
+### 4.1 Phase 标注：从脚接触时刻反推
+
+**步骤**：
+1. 取动捕数据的脚部关节（左右各一）的 **Y 坐标**（垂直高度）
+2. 对每只脚的 Y 坐标做**低通滤波**（去抖动）
+3. 找 Y 的 **local minima**（局部最低点） = 脚触地时刻
+4. 右脚触地 → 标 φ = 0；左脚触地 → 标 φ = π
+5. 两次 foot strike 之间，phase **线性插值**（从 0 到 π 或从 π 到 2π）
+
+**Python 伪代码**（scipy）：
+```python
+from scipy.signal import find_peaks, butter, filtfilt
+
+foot_y_right = mocap_data[:, right_foot_idx, 1]  # Y 坐标
+foot_y_right_smooth = filtfilt(butter_low_pass, foot_y_right)
+strike_frames_right = find_peaks(-foot_y_right_smooth)[0]
+
+# 每个 strike_frame 标 phase=0，相邻 strike 之间线性插值到 π
+# 左脚同理，标 phase=π
+# 合并两只脚的标注，得到全序列的 phase
+```
+
+**论文数据**：~1 小时动捕，经过 phase 标注后得到 ~108000 帧训练样本。
+
+![[images/fig6.png]]
+
+*图 6：Phase 标注流程。从原始动捕的脚部 Y 坐标，低通滤波后找局部最低点作为 foot strike，在相邻 strike 间线性插值 phase，得到每一帧的 φ 标签。*
+
+### 4.2 Trajectory 特征：未来 1 秒的路径规划
+
+PFNN 的输入不只有当前 pose，还包括 **trajectory 特征**：
+
+**Trajectory 特征内容**：
+- 未来 1 秒 12 帧的预测路径 XZ 坐标（2D 平面坐标，忽略 Y）：24 维
+- 每一帧的预测朝向（facing direction）：12 维
+- 每一帧的 gait 标签（走 / 跑 / 跳 / 蹲）：12 × 5 = 60 维
+- 总计 trajectory 特征：~96 维
+
+**训练时**：从动捕数据"看未来"取 12 个未来帧
+**运行时**：由**玩家输入**（游戏手柄、鼠标路径）提供未来 1 秒的路径 + 想要的 gait
+
+**关键**：trajectory 让 PFNN "看到"用户的意图，这是它能响应交互的核心。
+
+![[images/fig7.png]]
+
+*图 7：Trajectory 特征。把"当前帧"往后 1 秒预测 12 帧（约 40ms 间隔），每帧带 2D 位置、朝向、gait 标签。运行时这些特征由玩家输入决定，让 PFNN 知道"用户想往哪走、用什么步态"。*
+
+### 4.3 完整输入输出维度
+
+**输入 x（342 维）**：
+- 当前 pose（关节位置 + 速度）：约 200 维
+- Trajectory 特征（未来 12 帧 × 8 维/帧）：96 维
+- 地形采样（周围 12 个点的高度）：12 维
+- Gait 标签（one-hot）：5 维
+- 其他：约 30 维
+
+**输出 y（311 维）**：
+- 下一帧 pose（关节位置 + 速度 + 旋转）：约 250 维
+- Δφ（phase 增量）：1 维
+- Root 位移（XZ 方向）：2 维
+- 地形接触修正：约 60 维
+
+**注意**：论文里数值细节可能因版本略有差异，上面是主要构成。
+
+### 4.4 章末自测
+
+<details>
+<summary>为什么 trajectory 要用"未来 12 帧"而不是只当前帧？</summary>
+
+**提前规划**。角色要迈哪只脚、速度多快，需要知道未来几帧的路径。只给当前帧，PFNN 不知道你是想左拐还是右拐；给未来 12 帧（~0.5 秒），规划能提前响应用户意图。
+
+</details>
+
+---
+
+## §5 运行时一帧的完整流程 [L0 核心] ⭐
+
+> **问题先行**：游戏里 30 ms 一帧的预算，PFNN 实际做了哪些事？
+
+### 5.1 一帧的 6 个步骤
+
+假设当前帧 t，已知 pose_t 和 phase φ_t。目标：算出 pose_{t+1}。
+
+**Step 1**：更新 phase
+- phase 由上一帧的 Δφ 累加：φ_{t+1} = φ_t + Δφ（上一帧 PFNN 输出）
+- Δφ ≈ 0.1 rad/帧（大约每秒 8-10 个 phase 循环）
+
+**Step 2**：Catmull-Rom 插值 4 专家权重
+- 给定 φ_{t+1}，算 Catmull-Rom 系数 (w_0, w_1, w_2, w_3)
+- 混合得到当前帧要用的 W(φ_{t+1}) 和 b(φ_{t+1})
+
+**Step 3**：收集输入
+- 从玩家输入获取 trajectory（未来 1 秒路径）
+- 从地形采样得到 12 点高度
+- 拼接成 342 维输入 x
+
+**Step 4**：三层 FC 前向传播
+```
+h1 = ReLU(W_1(φ) · x + b_1(φ))
+h2 = ReLU(W_2(φ) · h1 + b_2(φ))
+y = W_3(φ) · h2 + b_3(φ)
+```
+
+每层 hidden size = 512
+
+**Step 5**：解析输出 y
+- 拆分成 pose_{t+1}、Δφ_{t+1}、root 位移等
+
+**Step 6**：应用到角色
+- pose_{t+1} 驱动骨骼
+- root 位移推动角色在世界中前进
+
+### 5.2 Hand-calc 2 —— 一帧的计算量估算 🔢
+
+**设置**：
+- 3 层 FC，hidden = 512
+- 输入 342 维，输出 311 维
+- 每层权重矩阵约 512 × 512 = 262k 个乘加
+
+**单次前向乘加量**：
+- 层 1：342 × 512 = 175k
+- 层 2：512 × 512 = 262k
+- 层 3：512 × 311 = 159k
+- **总乘加 ≈ 596k ≈ 0.6 M ops**
+
+**现代 CPU 单核每秒可做** ~10 G ops（GFLOPS 级），所以一次前向大约 **0.06 ms**。
+
+**加上**：
+- Catmull-Rom 权重混合：4 个专家 × 700k 参数 = 2.8M 加权混合（~0.3 ms on CPU）
+- 输入收集 + 输出解析：~0.5 ms
+- **总计**：~1 ms on modern CPU（2017 年是 **29 ms**，硬件进步 30 倍）
+
+**结论**：PFNN 现在在手机端都能实时运行。是**工业级可部署**的方法。
+
+![[images/fig8.png]]
+
+*图 8：运行时一帧的完整 tick 流程。从 phase 更新 → Catmull-Rom 权重插值 → 收集输入 → 3 层 FC 前向 → 解析输出 → 驱动骨骼。整个 pipeline 每帧 ~1 ms on modern CPU。*
+
+### 5.3 章末自测
+
+<details>
+<summary>如果把 3 层 FC 改成 6 层，会怎样？</summary>
+
+参数量 ~2 倍，一次前向时间 ~2 倍（2 ms），但更深的网络**未必质量更好**——PFNN 的瓶颈不在深度，而在数据多样性和 phase 精度。论文实测 3 层已接近饱和。
+
+</details>
+
+---
+
+## §6 Demo 效果与论文实验 [L1 扩展]
+
+### 6.1 最震撼的 demo：catwalk 跑步
+
+论文和作者主页展示了一个角色在**复杂地形**（斜坡、阶梯、障碍物）上用 catwalk 风格跑步的 demo。关键亮点：
+- **无抖动**（phase 解决了 RNN 的累积误差）
+- **脚接地准确**（脚接触 loss 在训练中被强调）
+- **转向自然**（trajectory 让角色提前规划）
+- **实时**（29 ms/帧，60 Hz 可达）
+
+### 6.2 PFNN vs Motion Matching 对比
+
+| 指标 | Motion Matching (2016) | PFNN (2017) |
+|---|---|---|
+| 内存 | 200-500 MB | ~10 MB |
+| 运行时间 | 5-10 ms/帧 | 29 ms/帧（2017 CPU） |
+| 泛化 | 差（未见步态崩） | 好（神经网络插值） |
+| 质量 | 优秀（真实动捕） | 优秀（追平 MM） |
+| 工程复杂度 | 低（数据库查询） | 中（需训练 + 调 phase） |
+
+**结论**：PFNN 把内存缩小 50 倍，质量追平，泛化更好。**这是质的飞跃**。
+
+![[images/fig9.png]]
+
+*图 9：PFNN vs Motion Matching 的对比。左边内存对比，右边质量对比（越高越好）。PFNN 在保持同等质量下把内存压缩了 ~50 倍。*
+
+### 6.3 PFNN vs 普通 MLP（消融实验）
+
+论文对比了：
+- **普通 MLP（不带 phase）**：抖动严重，走两步就乱
+- **MLP + phase as input**：改善但仍有 mode collapse
+- **PFNN**：完全解决
+
+这个消融证明 **phase 不能只作为输入，必须驱动权重混合**。这是 PFNN 的核心贡献。
+
+---
+
+## §7 从 PFNN 到 MANN / NSM / DeepPhase [L1 扩展]
+
+四代演进**每代只讲一段**，重点是"解决了 PFNN 的什么痛点"。
+
+### 7.1 MANN（2018）：四足动物不能用 phase
+
+**问题**：PFNN 的 phase 假设**双足周期步态**。四足动物（马、狗）有多种步态（walk/trot/canter/gallop），phase 结构太复杂，单变量 φ 不够用。
+
+**MANN 的解法**：**Gating Network**（门控网络）。不用人工指定 phase 在 4 个专家里混合，而是让一个小网络**学"当前应该用哪几个专家的组合"**。
+
+**意义**：从"人为指定先验"迈向"学习先验"。但 MANN 的专家仍是手工切分（4-8 个），专家本身的语义还是人类设计。
+
+### 7.2 NSM（2019）：复杂场景交互
+
+**问题**：PFNN / MANN 只能做"周期运动"（走跑跳）。**坐下、开门、搬物**这种**一次性任务动作**没有循环结构，phase 概念失效。
+
+**NSM 的解法**：**任务状态 + 多专家混合**。每个任务（sit / open door / pickup）是一个专家组，网络根据当前任务的进度（类似 phase 但是"一次性"）混合这些专家。
+
+**意义**：动画 AI 从"循环运动"走向"任务动作"。这是 RDR2 马匹控制、Watch Dogs Legion 的 NPC 日常行为背后的思想。
+
+### 7.3 DeepPhase（2022）：自动学 phase
+
+**问题**：PFNN / MANN / NSM 的 phase 都要**人工标注**。大规模数据集下标注成本爆炸。
+
+**DeepPhase 的解法**：**Periodic AutoEncoder**。训一个 AutoEncoder，强迫它的潜空间**周期性地穿越**（在潜空间上添加周期先验 loss）。训完后，潜空间的某一维就自然学成了 phase，**不需要人工标注**。
+
+**意义**：从"人标 phase"到"网络自己学 phase"。结合现代大数据，DeepPhase 可以训在几百小时数据上，质量远超 PFNN。
+
+![[images/fig10.png]]
+
+*图 10：PFNN → MANN → NSM → DeepPhase 四代演化图。每一代解决前一代的一个痛点：从单变量 phase 到门控混合，从循环运动到复杂交互，从人标到自学 phase。共同主线是"越来越少的人为先验，越来越多的数据学习"。*
+
+### 7.4 为什么要讲这四代？
+
+作为 TA，你不一定会用最新的 DeepPhase（它的实现更复杂，训练数据要求更高）。但**理解四代演进的逻辑**能帮你：
+- 判断自己项目该用哪一代（小数据/双足→PFNN；四足→MANN；交互→NSM）
+- 看懂开源代码（AI4Animation repo 里四代都有）
+- 跟进最新进展（Starke 2024 之后的新工作都基于 DeepPhase 思想）
+
+---
+
+## §8 TA 的复现建议 [L1 扩展]
+
+如果你明天想在 UE 里跑一个最小 PFNN，以下是我的实战路径。
+
+### 8.1 数据准备（1-2 天）
+
+**Step 1**：找 1 小时动捕数据
+- 公开数据集：HumanML3D（过度）、CMU MoCap（原始）、Lafan1（适合）
+- 内部数据：如果你部门有角色动捕，选 walk + jog 两个 gait 够了
+
+**Step 2**：用 Python 标 phase
+```python
+# scipy + numpy 即可，约 100 行代码
+# 输入：BVH 或 FBX 动捕文件
+# 输出：每帧的 phase 值（0 到 2π）
+```
+
+**Step 3**：提取 trajectory 特征
+- 每帧往未来看 12 帧，提取 2D 路径 + 朝向 + gait
+- 用 root joint 的 XZ 坐标
+
+### 8.2 网络训练（半天）
+
+**最小 PyTorch 代码结构**：
+```python
+class PFNN(nn.Module):
+    def __init__(self, input_dim=342, output_dim=311):
+        self.experts = [ExpertMLP() for _ in range(4)]  # 4 experts
+
+    def forward(self, x, phase):
+        weights = catmull_rom_weights(phase)  # 4 scalar weights
+        W_blended = sum(w * expert.W for w, expert in zip(weights, self.experts))
+        b_blended = sum(w * expert.b for w, expert in zip(weights, self.experts))
+        h1 = relu(W_blended @ x + b_blended)
+        # ... 3 层
+        return y
+```
+
+**训练**：
+- Loss：MSE on pose + MSE on Δφ + MSE on foot contact
+- Batch size：32
+- Optimizer：Adam, lr=1e-4
+- Epochs：~50
+- 硬件：RTX 3060 约 4 小时
+
+### 8.3 UE 集成（1 天）
+
+**架构**：
+1. 导出训好的 PyTorch 模型为 ONNX
+2. UE 里用 `ONNXRuntime-Neural Net-Inference` 或 `NNE`（UE 5.3+ 内置）plugin 加载
+3. C++ Component 每 Tick：
+   - 从 PlayerController 读 trajectory
+   - 调用 ONNX 推理
+   - 把输出的关节旋转应用到 SkeletalMeshComponent
+
+### 8.4 常见坑
+
+| 坑 | 症状 | 解决 |
+|---|---|---|
+| Phase 标错 | 训出来的角色走路抖 | 重新检查脚接触检测，可视化 phase 曲线确认 |
+| Trajectory 对齐 | 角色转弯滞后 | 检查未来 12 帧取的是"未来"还是"当前" |
+| Δφ 累积 | 几分钟后 phase 漂移 | 用 sin/cos 表示 phase 输入，避免线性累积 |
+| 地形采样错 | 脚穿地 | 12 点采样半径要和角色脚步幅度匹配 |
+
+![[images/fig11.png]]
+
+*图 11：UE 最小 PFNN 的复现架构。Python 侧做数据标注 + 训练，导出 ONNX；UE 侧加载 ONNX，每 tick 输入 trajectory + 当前 pose，输出下一帧骨骼旋转。整个 pipeline 大约 3-4 天工作量。*
+
+---
+
+## §9 下节课预告 + 学习清单 [L0 核心]
+
+### 9.1 下节课：从数据驱动走向物理驱动
+
+PFNN 系列是**数据驱动**（学动捕数据）。下一大分支是**物理驱动**：
+
+- **DeepMimic（Peng 2018）**：用 RL 让角色学会模仿动捕 + 物理稳定
+- **AMP（Peng 2021）**：用 GAN-like discriminator 判断"动作像不像真实动捕"
+- **ASE（Peng 2022）**：学习"动作技能潜空间"供上层 RL 调用
+
+这一路线和今天的 PFNN 互补：数据驱动擅长"**具体动作怎么做**"，物理驱动擅长"**不确定场景如何自适应**"。
+
+### 9.2 学习清单
+
+**必读**：
+- Holden 2017 PFNN 原文（本节的主线）
+- 作者 blog：http://theorangeduck.com/page/phase-functioned-neural-networks-character-control
+
+**选读（理解完整谱系）**：
+- Zhang 2018 MANN（四足）
+- Starke 2019 NSM（交互）
+- Starke 2022 DeepPhase（自学 phase）
+
+**动手**：
+- AI4Animation GitHub（Unity + C# 实现，PFNN / MANN / NSM 都有）
+- 自己动捕 30 分钟走路数据 + scipy 标 phase + PyTorch 训最小模型
+
+![[images/fig12.png]]
+
+*图 12：下节课预告。数据驱动（PFNN 系）和物理驱动（DeepMimic 系）是两条互补的路线。明天我们进入物理驱动 + RL 的世界。*
+
+---
+
+## 📎 附录 A：术语表（中英对照）
+
+| 中文 | 英文 | 一句话解释 |
+|---|---|---|
+| 相位 | Phase (φ) | 当前步态周期中的位置，0 到 2π 一圈 |
+| 专家网络 | Expert Network | 每个关键 phase 对应一个独立的 MLP 权重 |
+| 三次插值 | Cubic Catmull-Rom | 用 4 个控制点生成过中间点的 3 次曲线 |
+| 循环先验 | Cyclic Prior | "走路是周期的"这个结构化信息 |
+| 门控网络 | Gating Network | MANN 里动态选专家组合的小网络 |
+| 动作匹配 | Motion Matching | 基于数据库查询的无 ML 角色控制 |
+
+---
+
+## 📎 附录 B：参考文献
+
+### 核心论文（A 级）
+- **[S1] PFNN** — Holden, Komura, Saito. "Phase-Functioned Neural Networks for Character Control", SIGGRAPH 2017. [A]
+- **[S2] MANN** — Zhang, Starke, Komura, Saito. "Mode-Adaptive Neural Networks for Quadruped Motion Control", SIGGRAPH 2018. [A]
+- **[S3] NSM** — Starke et al. "Neural State Machine for Character-Scene Interactions", SIGGRAPH Asia 2019. [A]
+- **[S4] DeepPhase** — Starke et al. "DeepPhase: Periodic Autoencoders for Learning Motion Phase Manifolds", SIGGRAPH 2022. [A]
+
+### 实用资源（B 级）
+- Holden 作者主页：http://theorangeduck.com
+- AI4Animation GitHub：https://github.com/sebastianstarke/AI4Animation
+
+---
+
+## 📝 综合自测（10 题，不给答案）
+
+1. RNN 学走路为什么会累积误差？举一个最小场景说明。
+2. Phase 为什么能解决 RNN 的抖动问题？Phase 本质上给网络带来什么**结构化信息**？
+3. Cubic Catmull-Rom 相比线性插值在 PFNN 里的优势是什么？具体列出 2 条。
+4. 如果你把 4 个专家改成 8 个，PFNN 会变好吗？改成 2 个呢？解释原因。
+5. 动捕数据的 phase 是怎么标注的？哪一步最容易出错？怎么排查？
+6. Trajectory 为什么要包括"未来 12 帧"的路径，而不是只取当前帧？
+7. PFNN 和 Motion Matching 的核心差异是什么？各自的内存 / 泛化代价？
+8. MANN 为什么放弃单变量 phase 改用门控？四足步态的什么特性让 phase 不适用？
+9. DeepPhase 怎么做到"自动学 phase 而不需要人标"？它的 AutoEncoder 周期约束怎么实现？
+10. 如果你要在 UE 里复现最小 PFNN，列出你的 data pipeline / 网络结构 / UE 集成方案。（不求代码，求架构）
+
+---
+
+## 写在最后
+
+PFNN 是 2017 年的论文，但它的**方法论影响**一直延续到今天：
+- **"用结构化先验让网络学循环"** → 现代 Transformer 的 positional encoding 也是类似思想
+- **"专家混合 + 连续插值"** → 现代 MoE（Mixture of Experts）大模型的思想源头之一
+- **"实时 + 小模型 + 高质量"** → 游戏 AI 永远追求的平衡
+
+TA 的价值在于**理解这些方法在具体项目里怎么用**。读懂 PFNN 这一篇，你就有了看懂后面所有 AI4Animation 论文的基础。
+
+明天（或下一次学习）我们进入**物理驱动 + RL** 的世界：DeepMimic / AMP / ASE。那是完全不同的思路——不再是"学真实动捕"，而是"让角色在物理引擎里学会做任何动作"。

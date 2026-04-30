@@ -8,176 +8,402 @@ const allPosts = (await getCollection('posts', ({ data }) => !data.draft))
 const latest = allPosts.slice(0, 5);
 
 const totalPosts = allPosts.length;
-const totalTags = new Set(allPosts.flatMap((p) => p.data.tags)).size;
-const firstDate = allPosts.length
+const firstDate  = allPosts.length
   ? new Date(Math.min(...allPosts.map((p) => p.data.pubDate.valueOf())))
   : new Date();
-const yearRange = `${firstDate.getFullYear()}—${new Date().getFullYear()}`;
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 const currentDate = new Date().toLocaleDateString('en-US', {
-  year: 'numeric', month: 'long', day: '2-digit',
+  year: 'numeric', month: 'short', day: '2-digit',
 });
 ---
 
 <BaseLayout wide={true}>
-  {/* ====================================================
-   *  Section 01 — Hero
-   * ==================================================== */}
-  <section class="pt-8 sm:pt-16 pb-24 sm:pb-32">
-    {/* Masthead meta row */}
-    <div class="flex items-center justify-between mb-12 sm:mb-20 font-mono text-[11px] uppercase tracking-widest text-ink-500">
-      <span>Issue № 001 · Vol. 1</span>
-      <span class="hidden sm:inline">{currentDate}</span>
-      <span class="flex items-center gap-2">
-        <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
-        Now Writing
-      </span>
-    </div>
 
-    {/* The big display title */}
-    <h1 class="display text-display-xl animate-rise">
-      <span class="block">纸上的</span>
-      <span class="block">
-        <span class="display-italic text-accent">animation</span>
-        <span class="text-ink-300">,</span>
-      </span>
-      <span class="block">与思考。</span>
-    </h1>
+  {/* ============== HERO — breaks out of the container to the viewport edges ============== */}
+  <section class="hero-scale page-bleed pt-10 sm:pt-14 pb-16 sm:pb-20">
+    <div class="page-bleed-inner px-6 sm:px-10 lg:px-14 xl:px-20 relative">
 
-    {/* Description + CTA */}
-    <div class="mt-12 sm:mt-16 grid grid-cols-12 gap-6 opacity-0 animate-rise" style="animation-delay: 0.2s;">
-      <div class="col-span-12 sm:col-span-5 sm:col-start-2">
-        <p class="eyebrow mb-3">— The premise</p>
-        <p class="font-serif text-xl sm:text-2xl text-ink-700 leading-relaxed">
-          一间安静的小屋，记录技术动画的学习、AI 与动画的边界，
-          以及那些<span class="display-italic text-accent">值得</span>慢下来想一想的事。
+      {/* Eyebrow row — runs across the full width */}
+      <div class="flex items-center gap-3 mb-6 relative">
+        <span class="font-mono text-[10.5px] uppercase tracking-[0.24em] text-ink-500">Chapter I &nbsp;·&nbsp; — 开篇 · overture</span>
+        <span class="h-px flex-1 max-w-[120px] bg-ink-200"></span>
+        <span class="font-mono text-[10.5px] uppercase tracking-[0.24em] text-ink-300">№ 01 &nbsp;·&nbsp; Vol. 01</span>
+        <span class="h-px flex-1 bg-ink-200"></span>
+        <span class="deco-star spin text-sm">✻</span>
+        <span class="font-mono text-[10.5px] uppercase tracking-[0.24em] text-ink-500">{currentDate}</span>
+      </div>
+
+      {/* Giant chapter mark I — sits at the top-left margin of the hero,
+         mirrors the II/III marks that live in each section's top-right corner. */}
+      <span class="chapter-mark-hero pointer-events-none select-none" aria-hidden="true">I</span>
+
+      {/* Title + right-side editorial module — side by side, 8/4 split */}
+      <div class="grid grid-cols-12 gap-8 lg:gap-10 items-start">
+
+        <h1 class="display display-poster col-span-12 lg:col-span-8 leading-[0.92] text-ink-900
+                   text-[clamp(2.75rem,8.4vw,8.5rem)] tracking-[-0.018em] -ml-[0.03em]">
+          A quiet, warm
+          <br/>notebook for
+          <br/><span class="display-italic">slow</span> thoughts<span class="text-accent">.</span>
+        </h1>
+
+        {/* Right-side editorial module — stamp / ruler / today's imprint */}
+        <aside class="col-span-12 lg:col-span-4 lg:pt-4 reveal-right">
+          <div class="relative">
+
+            {/* Ruler strip on top */}
+            <div class="flex items-end gap-[6px] mb-6 h-6 overflow-hidden">
+              {Array.from({ length: 32 }).map((_, i) => (
+                <span
+                  class:list={[
+                    'inline-block bg-ink-500/35',
+                    i % 5 === 0 ? 'w-px h-6' : (i % 5 === 2 ? 'w-px h-3' : 'w-px h-2'),
+                  ]}
+                ></span>
+              ))}
+            </div>
+
+            {/* Stamp — hand-drawn circular orange chop */}
+            <div class="relative inline-block hover-tilt">
+              <svg viewBox="0 0 140 140" class="w-[120px] h-[120px] stamp-svg" aria-hidden="true">
+                <defs>
+                  <path id="stampArc" d="M 70,70 m -50,0 a 50,50 0 1,1 100,0 a 50,50 0 1,1 -100,0" fill="none"/>
+                </defs>
+                <circle cx="70" cy="70" r="54" fill="none"
+                        stroke="rgb(var(--accent))" stroke-width="2"
+                        stroke-dasharray="3 4" opacity="0.85"/>
+                <circle cx="70" cy="70" r="48" fill="none"
+                        stroke="rgb(var(--accent))" stroke-width="1" opacity="0.7"/>
+                <text fill="rgb(var(--accent-deep))"
+                      font-family="'JetBrains Mono', monospace"
+                      font-size="7.5" letter-spacing="2.5">
+                  <textPath href="#stampArc" startOffset="2%">
+                    PAPER · ORANGE · STUDIO · 纸橙工作室 · EST · 2025 ·
+                  </textPath>
+                </text>
+                <g transform="translate(70 72)">
+                  <circle r="14" fill="rgb(var(--accent) / 0.15)"/>
+                  <circle r="11" fill="rgb(var(--accent) / 0.85)"/>
+                  <path d="M -2,-12 Q 0,-16 4,-13 Q 2,-9 -2,-12 Z" fill="rgb(var(--jade))"/>
+                  <circle r="2" fill="rgb(var(--bg))" cx="-3" cy="-2"/>
+                </g>
+              </svg>
+              <div class="absolute -bottom-1 left-2 right-2 h-2 rounded-full bg-accent/10 blur-md -z-10"></div>
+            </div>
+
+            {/* Today's imprint — four micro-metrics */}
+            <dl class="mt-8 space-y-3 font-mono text-[11px] uppercase tracking-[0.18em]">
+              <div class="flex items-baseline gap-4">
+                <dt class="w-14 text-ink-300 shrink-0">Air</dt>
+                <dd class="text-ink-700 flex items-center gap-2">
+                  <span class="inline-block w-2 h-2 rounded-full bg-accent/70 animate-pulse"></span>
+                  warm · light
+                </dd>
+              </div>
+              <div class="flex items-baseline gap-4">
+                <dt class="w-14 text-ink-300 shrink-0">Sound</dt>
+                <dd class="text-ink-700 flex items-center gap-1.5">
+                  <span class="flex items-end gap-[2px] h-3 mr-1">
+                    <span class="w-[2px] h-2 bg-accent/70 eq-bar"></span>
+                    <span class="w-[2px] h-3 bg-accent/80 eq-bar" style="animation-delay: 0.15s"></span>
+                    <span class="w-[2px] h-1.5 bg-accent/60 eq-bar" style="animation-delay: 0.3s"></span>
+                    <span class="w-[2px] h-2.5 bg-accent/70 eq-bar" style="animation-delay: 0.45s"></span>
+                  </span>
+                  lofi · rain
+                </dd>
+              </div>
+              <div class="flex items-baseline gap-4">
+                <dt class="w-14 text-ink-300 shrink-0">Tea</dt>
+                <dd class="text-ink-700">orange · hot</dd>
+              </div>
+              <div class="flex items-baseline gap-4">
+                <dt class="w-14 text-ink-300 shrink-0">Temp</dt>
+                <dd class="text-ink-700 tabular-nums">
+                  <span class="font-display text-lg text-ink-900 normal-case tracking-normal">18°C</span>
+                </dd>
+              </div>
+            </dl>
+
+            {/* Decorative asterisk and cross-hair */}
+            <div class="mt-8 flex items-center justify-between text-ink-300">
+              <span class="font-display text-2xl leading-none select-none spin-slow">✻</span>
+              <span class="font-mono text-[10px] tracking-[0.3em]">—— 今日 · today</span>
+              <span class="font-display text-2xl leading-none select-none">✣</span>
+            </div>
+
+            {/* Bottom ruler strip */}
+            <div class="mt-5 flex items-start gap-[6px] h-6 overflow-hidden">
+              {Array.from({ length: 32 }).map((_, i) => (
+                <span
+                  class:list={[
+                    'inline-block bg-ink-500/35',
+                    i % 5 === 0 ? 'w-px h-6' : (i % 5 === 2 ? 'w-px h-3' : 'w-px h-2'),
+                  ]}
+                ></span>
+              ))}
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      {/* Lede — the bridge between huge headline and small body copy */}
+      <div class="mt-10 grid grid-cols-12 gap-6 items-end">
+        <p class="lede col-span-12 lg:col-span-9">
+          欢迎来到 <span class="text-accent">纸橙的动画小屋</span>。
+          这里记录动画、技术，以及一些值得慢下来想一想的事。
         </p>
-      </div>
-      <div class="col-span-12 sm:col-span-5">
-        <p class="eyebrow mb-3">— Contents</p>
-        <ul class="space-y-2 text-[15px] text-ink-700">
-          <li class="flex items-baseline gap-3">
-            <span class="font-mono text-[11px] text-ink-300">01</span>
-            <a href="/blog" class="link"><span>文章归档</span><span class="link-arrow">→</span></a>
-          </li>
-          <li class="flex items-baseline gap-3">
-            <span class="font-mono text-[11px] text-ink-300">02</span>
-            <a href="/about" class="link"><span>关于纸橙</span><span class="link-arrow">→</span></a>
-          </li>
-          <li class="flex items-baseline gap-3">
-            <span class="font-mono text-[11px] text-ink-300">03</span>
-            <a href="/rss.xml" class="link"><span>RSS 订阅</span><span class="link-arrow">↗</span></a>
-          </li>
-          <li class="flex items-baseline gap-3">
-            <span class="font-mono text-[11px] text-ink-300">04</span>
-            <a href="https://github.com/zhichengZC" target="_blank" rel="noopener" class="link">
-              <span>GitHub</span><span class="link-arrow">↗</span>
-            </a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
-  {/* ====================================================
-   *  Section 02 — Latest writing (editorial list)
-   * ==================================================== */}
-  <section class="pb-24 reveal">
-    <div class="hairline-t pt-8 mb-6">
-      <div class="flex items-baseline justify-between mb-2">
-        <p class="eyebrow">§ 02 — Latest writing</p>
-        <a href="/blog" class="link text-sm"><span>View all</span><span class="link-arrow">→</span></a>
-      </div>
-      <h2 class="display text-display-md">
-        <span class="display-italic text-accent">Recent</span> dispatches.
-      </h2>
-    </div>
-
-    {latest.length === 0 ? (
-      <div class="py-24 text-center">
-        <p class="font-serif text-2xl text-ink-500">
-          还未发表 · <span class="display-italic">coming soon</span>
-        </p>
-      </div>
-    ) : (
-      <div class="mt-4 hairline-t">
-        {latest.map((post, i) => (
-          <PostCard post={post} index={i + 1} />
-        ))}
-      </div>
-    )}
-  </section>
-
-  {/* ====================================================
-   *  Section 03 — The author strip
-   * ==================================================== */}
-  <section class="pb-24 reveal">
-    <div class="hairline-t pt-8 mb-10">
-      <p class="eyebrow mb-2">§ 03 — Colophon</p>
-      <h2 class="display text-display-md">
-        By <span class="display-italic text-accent">纸橙</span>.
-      </h2>
-    </div>
-
-    <div class="grid grid-cols-12 gap-6 sm:gap-10">
-      <div class="col-span-12 sm:col-span-7">
-        <p class="font-serif text-xl sm:text-2xl text-ink-700 leading-relaxed max-w-[52ch]">
-          技术动画实习生。正在学习 Transformer 与动画系统，
-          被 AI × 动画 的边界深深吸引。
-          <span class="text-ink-500">
-            相信把学到的东西写下来，思考才会真正留下痕迹。
-          </span>
-        </p>
-
-        <div class="mt-8 flex flex-wrap gap-3">
-          <a href="/about" class="btn-primary">
-            <span>关于纸橙</span>
-            <span aria-hidden>→</span>
+        <div class="col-span-12 lg:col-span-3 flex flex-wrap lg:justify-end items-center gap-x-5 gap-y-2 font-mono text-[11px] uppercase tracking-[0.22em] text-ink-500">
+          <a href={`${base}/blog`} class="link">
+            <span>Read</span><span class="link-arrow">→</span>
           </a>
-          <a href="https://github.com/zhichengZC" target="_blank" rel="noopener" class="btn-ghost">
-            <span>GitHub</span>
-            <span aria-hidden>↗</span>
+          <span class="text-ink-300">·</span>
+          <a href={`${base}/about`} class="link">
+            <span>About</span><span class="link-arrow">→</span>
+          </a>
+          <span class="text-ink-300">·</span>
+          <a href={`${base}/rss.xml`} class="link">
+            <span>RSS</span><span class="link-arrow">↗</span>
           </a>
         </div>
       </div>
 
-      {/* Stats block */}
-      <div class="col-span-12 sm:col-span-4 sm:col-start-9">
-        <dl class="grid grid-cols-3 sm:grid-cols-1 gap-6">
-          <div class="hairline-t pt-3">
-            <dt class="eyebrow mb-1">Posts</dt>
-            <dd class="font-display text-4xl sm:text-5xl text-ink-900 tabular-nums">{String(totalPosts).padStart(2, '0')}</dd>
-          </div>
-          <div class="hairline-t pt-3">
-            <dt class="eyebrow mb-1">Topics</dt>
-            <dd class="font-display text-4xl sm:text-5xl text-ink-900 tabular-nums">{String(totalTags).padStart(2, '0')}</dd>
-          </div>
-          <div class="hairline-t pt-3">
-            <dt class="eyebrow mb-1">Since</dt>
-            <dd class="font-display text-4xl sm:text-5xl text-ink-900 tabular-nums">{firstDate.getFullYear()}</dd>
-          </div>
-        </dl>
+      {/* Meta row — 4 cells across the page width */}
+      <div class="mt-12 grid grid-cols-12 gap-6 hairline-t pt-6">
+        <div class="col-span-6 sm:col-span-3">
+          <p class="eyebrow mb-2">Now</p>
+          <p class="font-serif text-[16px] leading-[1.6] text-ink-900">
+            学 Transformer &amp; Motion Matching
+            <span class="text-ink-500"> 的底层原理。</span>
+          </p>
+        </div>
+        <div class="col-span-6 sm:col-span-3">
+          <p class="eyebrow mb-2">Desk</p>
+          <p class="font-serif text-[16px] leading-[1.6] text-ink-900">
+            一张小桌，一盏暖灯
+          </p>
+        </div>
+        <div class="col-span-6 sm:col-span-3">
+          <p class="eyebrow mb-2">Mood</p>
+          <p class="font-serif text-[16px] leading-[1.6] text-ink-900 flex items-baseline gap-2">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-accent translate-y-[-2px]"></span>
+            quiet &amp; curious
+          </p>
+        </div>
+        <div class="col-span-6 sm:col-span-3">
+          <p class="eyebrow mb-2">Role</p>
+          <p class="font-serif text-[16px] leading-[1.6] text-ink-900">
+            Technical Animator
+            <span class="text-ink-500"> · intern</span>
+          </p>
+        </div>
+      </div>
+
+      {/* Stats + signature row */}
+      <div class="mt-8 grid grid-cols-12 gap-6 items-end hairline-t pt-6">
+        <div class="col-span-6 sm:col-span-2">
+          <p class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-ink-300">Posts</p>
+          <p class="mt-1 font-display text-3xl tabular-nums text-ink-900 tracking-tight">{String(totalPosts).padStart(2,'0')}</p>
+        </div>
+        <div class="col-span-6 sm:col-span-2">
+          <p class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-ink-300">Since</p>
+          <p class="mt-1 font-display text-3xl tabular-nums text-ink-900 tracking-tight">{firstDate.getFullYear()}</p>
+        </div>
+        <div class="col-span-6 sm:col-span-2">
+          <p class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-ink-300">Read</p>
+          <p class="mt-1 font-display text-3xl text-ink-900 tracking-tight">slow</p>
+        </div>
+        <div class="col-span-12 sm:col-span-6 sm:text-right">
+          <svg viewBox="0 0 180 40" class="inline-block w-[140px] h-auto" aria-hidden="true">
+            <path
+              d="M4 28 Q18 8, 32 24 T62 22 Q72 10, 84 26 Q94 36, 108 20 T140 24 Q152 16, 168 22"
+              fill="none"
+              stroke="rgb(var(--ink-500))"
+              stroke-width="1.4"
+              stroke-linecap="round"
+            />
+            <circle cx="172" cy="24" r="1.6" fill="rgb(var(--accent))"/>
+          </svg>
+          <p class="mt-1 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-300">
+            signed · 纸橙
+          </p>
+        </div>
       </div>
     </div>
   </section>
 
-  {/* ====================================================
-   *  Tagline ticker
-   * ==================================================== */}
-  <section class="hairline-t hairline-b py-6 overflow-hidden">
-    <div class="ticker-track font-display text-5xl sm:text-7xl text-ink-900 gap-8">
-      {Array(2).fill(0).map(() => (
-        <span class="flex items-center gap-8 px-4">
-          <span>Record slowly.</span>
-          <span class="accent-dot"></span>
-          <span class="display-italic text-accent">Think deeply.</span>
-          <span class="accent-dot"></span>
-          <span>Write honestly.</span>
-          <span class="accent-dot"></span>
-          <span class="display-italic">Stay curious.</span>
-          <span class="accent-dot"></span>
-        </span>
-      ))}
+  {/* ============== RECENT — same bleed width as hero ============== */}
+  <section class="page-bleed pb-20 reveal relative">
+    <div class="page-bleed-inner px-6 sm:px-10 lg:px-14 xl:px-20 relative">
+
+      {/* Section header with big chapter mark anchored to the right side */}
+      <div class="pt-16 pb-8 relative">
+        {/* Chapter mark — lives in the top-right corner so it never overlaps copy */}
+        <span class="chapter-mark-right pointer-events-none" aria-hidden="true">II</span>
+
+        <div class="flex items-baseline gap-4">
+          <span class="deco-page-num">Chapter II</span>
+          <span class="h-px flex-1 bg-ink-200"></span>
+          <span class="deco-star spin text-[13px] text-ink-300">✻</span>
+          <span class="deco-page-num">最近 · recent</span>
+        </div>
+      </div>
+
+      {/* Margin tick marks down the left edge */}
+      <div class="hidden xl:flex flex-col gap-1.5 absolute left-[-4px] top-24">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <span class:list={['deco-tick', i === 0 ? 'opacity-80' : 'opacity-30']}></span>
+        ))}
+      </div>
+
+      <div class="grid grid-cols-12 gap-8 lg:gap-12">
+        <div class="col-span-12 lg:col-span-8">
+          <div class="flex items-baseline justify-between mb-6 hairline-t pt-6">
+            <p class="eyebrow flex items-center gap-3">
+              <span>Recent &nbsp;·&nbsp; 最近</span>
+              <span class="deco-star spin text-[13px]">✻</span>
+            </p>
+            <a href={`${base}/blog`} class="link text-xs font-mono uppercase tracking-[0.2em]">
+              <span>All</span><span class="link-arrow">→</span>
+            </a>
+          </div>
+
+          {latest.length === 0 ? (
+            <p class="py-20 font-serif text-lg text-ink-500">
+              还没有文章 · nothing yet
+            </p>
+          ) : (
+            <div class="hairline-t">
+              {latest.map((post, i) => (
+                <PostCard post={post} index={i + 1} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Right rail — marginalia */}
+        <aside class="hidden lg:block col-span-4 pt-6 space-y-8">
+          <div class="hairline-t pt-4">
+            <p class="eyebrow mb-3">Marginalia</p>
+            <p class="font-serif text-[16px] leading-[1.75] text-ink-700">
+              "The best way to find out if you can trust somebody is to trust them."
+            </p>
+            <p class="mt-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-300">
+              — E. Hemingway
+            </p>
+          </div>
+
+          <div class="hairline-t pt-4">
+            <p class="eyebrow mb-3">Listening</p>
+            <ul class="space-y-1.5 font-serif text-[16px] text-ink-900">
+              <li class="flex items-baseline gap-3">
+                <span class="font-mono text-[10px] text-ink-300">01</span>
+                <span>Nujabes · Luv(sic)</span>
+              </li>
+              <li class="flex items-baseline gap-3">
+                <span class="font-mono text-[10px] text-ink-300">02</span>
+                <span>Joe Hisaishi · Summer</span>
+              </li>
+              <li class="flex items-baseline gap-3">
+                <span class="font-mono text-[10px] text-ink-300">03</span>
+                <span class="text-ink-500 italic">silence</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="hairline-t pt-4">
+            <p class="eyebrow mb-3">Reading</p>
+            <p class="font-serif text-[16px] leading-[1.75] text-ink-700">
+              Character Animation with Direct3D<br/>
+              <span class="text-ink-500">by Carl Granberg</span>
+            </p>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  {/* ============== COLOPHON — same bleed width ============== */}
+  <section class="page-bleed pb-14 reveal relative">
+    <div class="page-bleed-inner px-6 sm:px-10 lg:px-14 xl:px-20 relative">
+
+      <div class="pt-8 pb-4 relative">
+        <span class="chapter-mark-right pointer-events-none" aria-hidden="true">III</span>
+
+        <div class="flex items-baseline gap-4">
+          <span class="deco-page-num">Chapter III</span>
+          <span class="h-px flex-1 bg-ink-200"></span>
+          <span class="deco-page-num">终 · colophon</span>
+        </div>
+      </div>
+
+      <div class="hairline-t pt-6 grid grid-cols-12 gap-6 text-sm mt-2">
+        <div class="col-span-12 sm:col-span-6">
+          <p class="eyebrow mb-3 flex items-center gap-2">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-accent"></span>
+            Colophon
+          </p>
+          <p class="font-serif text-[16px] text-ink-700 leading-[1.75] max-w-[42ch]">
+            Typeset in Fraunces, Noto Serif SC &amp; Inter.
+            Written from a small desk, somewhere quiet.
+          </p>
+        </div>
+        <div class="col-span-12 sm:col-span-6 sm:text-right">
+          <p class="eyebrow mb-3">Since</p>
+          <p class="font-mono text-[13px] tabular-nums text-ink-500">
+            {firstDate.getFullYear()} — {new Date().getFullYear()} &nbsp;·&nbsp; {String(totalPosts).padStart(2,'0')} entries
+          </p>
+        </div>
+      </div>
+
+      {/* End mark — three floating ornaments */}
+      <div class="mt-10 flex items-center justify-center gap-6 text-ink-300">
+        <span class="h-px w-16 bg-current opacity-40"></span>
+        <span class="deco-star text-xl">✻</span>
+        <span class="deco-star text-2xl spin text-accent/70">✹</span>
+        <span class="deco-star text-xl">✻</span>
+        <span class="h-px w-16 bg-current opacity-40"></span>
+      </div>
+      <p class="mt-3 text-center font-mono text-[10px] uppercase tracking-[0.28em] text-ink-300">
+        — end of page —
+      </p>
     </div>
   </section>
 </BaseLayout>
+
+<style>
+  .hero-scale {
+    --hero-scale: 1;
+    --hero-opacity: 1;
+    --hero-ty: 0px;
+    --hero-blur: 0px;
+    transform: translateY(var(--hero-ty)) scale(var(--hero-scale));
+    transform-origin: 20% top;
+    opacity: var(--hero-opacity);
+    filter: blur(var(--hero-blur));
+    will-change: transform, opacity, filter;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-scale { transform: none; opacity: 1; filter: none; }
+  }
+
+  /* ===== Page bleed — break out of parent max-width to reach the viewport edges
+     Used by every top-level section so the whole page shares one wide canvas. ===== */
+  .page-bleed {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+  }
+  .page-bleed-inner {
+    max-width: 1760px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .stamp-svg { animation: stampSpin 24s linear infinite; transform-origin: center; }
+  @keyframes stampSpin { to { transform: rotate(360deg); } }
+</style>

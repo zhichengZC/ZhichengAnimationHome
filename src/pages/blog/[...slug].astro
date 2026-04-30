@@ -25,13 +25,15 @@ const fmt = (d: Date) => {
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}.${m}.${day}`;
 };
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <BaseLayout title={title} description={description}>
   <article class="pt-4 sm:pt-10 pb-24">
     {/* Breadcrumb / back */}
     <div class="mb-12">
-      <a href="/blog" class="link text-sm text-ink-500">
+      <a href={`${base}/blog`} class="link text-sm text-ink-500">
         <span aria-hidden>←</span>
         <span>All writing</span>
       </a>
@@ -92,13 +94,13 @@ const fmt = (d: Date) => {
       </div>
 
       <div class="grid grid-cols-12 gap-4">
-        <a href="/blog" class="col-span-12 sm:col-span-6 hairline-t pt-5 group">
+        <a href={`${base}/blog`} class="col-span-12 sm:col-span-6 hairline-t pt-5 group cursor-hover">
           <p class="eyebrow mb-2">— Continue reading</p>
           <p class="font-display text-3xl text-ink-900 group-hover:text-accent transition-colors">
             All writing <span class="link-arrow inline-block">→</span>
           </p>
         </a>
-        <a href="/" class="col-span-12 sm:col-span-6 hairline-t pt-5 group">
+        <a href={`${base}/`} class="col-span-12 sm:col-span-6 hairline-t pt-5 group cursor-hover">
           <p class="eyebrow mb-2">— Back home</p>
           <p class="font-display text-3xl text-ink-900 group-hover:text-accent transition-colors">
             Home <span class="link-arrow inline-block">↖</span>

@@ -12,138 +12,147 @@ const now = [
   { label: 'Learning',  value: 'Transformer / Attention 底层机制' },
   { label: 'Building',  value: '技术动画管线与 AI 生成 demo' },
   { label: 'Playing',   value: 'ARC Raiders · Elden Ring' },
-  { label: 'Reading',   value: 'Character Animation With Direct3D' },
+  { label: 'Reading',   value: 'Character Animation with Direct3D' },
 ];
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <BaseLayout title="About" wide={true}>
-  <section class="pt-8 sm:pt-16 pb-24">
-    <div class="flex items-center justify-between mb-10 font-mono text-[11px] uppercase tracking-widest text-ink-500">
-      <span>§ Colophon</span>
-      <span>About the author</span>
+
+  <section class="pt-16 sm:pt-24 pb-16">
+    <div class="grid grid-cols-12 gap-8 lg:gap-16 items-start">
+
+      <div class="col-span-12 lg:col-span-8">
+        <div class="flex items-center gap-3 mb-10">
+          <span class="font-mono text-[10.5px] uppercase tracking-[0.24em] text-ink-500">— About</span>
+          <span class="h-px flex-1 max-w-[60px] bg-ink-200"></span>
+          <span class="font-mono text-[10.5px] uppercase tracking-[0.24em] text-ink-300">№ 03</span>
+        </div>
+
+        <h1 class="font-display leading-[1] text-[clamp(2.5rem,7vw,6rem)] tracking-[-0.035em] text-ink-900">
+          Hi, I'm <span class="display-italic text-accent">纸橙</span>.
+        </h1>
+
+        <div class="mt-12 space-y-6 font-serif text-[17px] sm:text-lg text-ink-700 leading-[1.85] max-w-[54ch]">
+          <p>
+            一名技术动画实习生。对我来说，动画不只是让角色动起来——
+            每一帧里藏着物理、曲线、情绪和意图。
+          </p>
+          <p>
+            最近在学 Transformer 和 Motion Matching 的底层原理，
+            也在看 AI 和动画怎么结合。
+            <span class="text-ink-500">这里是我慢慢记下这些想法的地方。</span>
+          </p>
+        </div>
+      </div>
+
+      <aside class="col-span-12 lg:col-span-4 lg:pt-4 space-y-8">
+        <div class="hairline-t pt-4">
+          <dl class="space-y-5">
+            <div class="flex items-baseline gap-5">
+              <dt class="w-16 shrink-0 font-mono text-[10.5px] uppercase tracking-[0.22em] text-ink-300 pt-1">Role</dt>
+              <dd class="flex-1 font-serif text-[15px] text-ink-900">Technical Animator · intern</dd>
+            </div>
+            <div class="flex items-baseline gap-5">
+              <dt class="w-16 shrink-0 font-mono text-[10.5px] uppercase tracking-[0.22em] text-ink-300 pt-1">Based</dt>
+              <dd class="flex-1 font-serif text-[15px] text-ink-900">China · Remote</dd>
+            </div>
+            <div class="flex items-baseline gap-5">
+              <dt class="w-16 shrink-0 font-mono text-[10.5px] uppercase tracking-[0.22em] text-ink-300 pt-1">Writes</dt>
+              <dd class="flex-1 font-serif text-[15px] text-ink-900">Tech &amp; Animation</dd>
+            </div>
+            <div class="flex items-baseline gap-5">
+              <dt class="w-16 shrink-0 font-mono text-[10.5px] uppercase tracking-[0.22em] text-ink-300 pt-1">Drinks</dt>
+              <dd class="flex-1 font-serif text-[15px] text-ink-900">oat latte</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="hairline-t pt-6">
+          <svg viewBox="0 0 180 40" class="w-[140px] h-auto" aria-hidden="true">
+            <path d="M4 28 Q18 8, 32 24 T62 22 Q72 10, 84 26 Q94 36, 108 20 T140 24 Q152 16, 168 22"
+                  fill="none" stroke="rgb(var(--ink-500))" stroke-width="1.4" stroke-linecap="round"/>
+            <circle cx="172" cy="24" r="1.6" fill="rgb(var(--accent))"/>
+          </svg>
+          <p class="mt-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-300">signed · 纸橙</p>
+        </div>
+      </aside>
     </div>
+  </section>
 
-    <h1 class="display text-display-xl">
-      <span class="block">Hi, I'm</span>
-      <span class="block display-italic text-accent">纸橙.</span>
-    </h1>
+  {/* ======= Now ======= */}
+  <section class="pb-20 reveal">
+    <div class="grid grid-cols-12 gap-8 lg:gap-16">
+      <div class="col-span-12 lg:col-span-8">
+        <div class="flex items-baseline justify-between mb-8 hairline-t pt-6">
+          <p class="eyebrow">Now &nbsp;·&nbsp; 最近</p>
+          <span class="font-mono text-[10.5px] tabular-nums text-ink-300">{new Date().toISOString().slice(0,10)}</span>
+        </div>
+        <dl class="grid grid-cols-12 gap-6">
+          {now.map((item) => (
+            <div class="col-span-12 sm:col-span-6 hairline-t pt-4">
+              <dt class="eyebrow mb-1">{item.label}</dt>
+              <dd class="font-serif text-[17px] text-ink-900">{item.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </div>
+  </section>
 
-    <div class="mt-16 grid grid-cols-12 gap-6 sm:gap-10">
-      <div class="col-span-12 sm:col-span-7 sm:col-start-2">
-        <p class="eyebrow mb-4">— The story</p>
-        <div class="space-y-6 font-serif text-xl sm:text-[1.35rem] text-ink-700 leading-relaxed">
-          <p>
-            我是一名<span class="display-italic text-accent">技术动画</span>实习生，
-            正在走向 Technical Animator 的方向。
-          </p>
-          <p>
-            对我来说，动画不只是"让角色动起来"——
-            每一帧里藏着物理、曲线、情绪、意图。
-            我想去理解这些细节，再用<span class="display-italic">代码</span>把它们重新组织出来。
-          </p>
-          <p>
-            最近被 AI 与动画的结合深深吸引，
-            在学习 Transformer 和 Motion Matching 等技术的底层原理。
-            这间小屋是我慢慢思考的地方。
-          </p>
+  {/* ======= Stack ======= */}
+  <section class="pb-20 reveal">
+    <div class="grid grid-cols-12 gap-8 lg:gap-16">
+      <div class="col-span-12 lg:col-span-8">
+        <p class="eyebrow hairline-t pt-6 mb-8">Stack &nbsp;·&nbsp; 工具</p>
+        <div class="grid grid-cols-12 gap-6">
+          {stack.map((group) => (
+            <div class="col-span-12 sm:col-span-6 hairline-t pt-5">
+              <p class="eyebrow mb-3">{group.label}</p>
+              <ul class="space-y-1.5 font-serif text-[17px] text-ink-900">
+                {group.items.map((it) => (
+                  <li class="flex items-baseline gap-3">
+                    <span class="font-mono text-[11px] text-ink-300">+</span>
+                    <span>{it}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </div>
     </div>
   </section>
 
-  {/* ======================== Now ======================== */}
-  <section class="pb-24 reveal">
-    <div class="hairline-t pt-8 mb-8">
-      <div class="flex items-baseline justify-between">
-        <p class="eyebrow">§ Now</p>
-        <span class="font-mono text-[11px] tabular-nums text-ink-300">
-          {new Date().toISOString().slice(0, 10)}
-        </span>
-      </div>
-      <h2 class="display text-display-md mt-2">
-        What I'm <span class="display-italic text-accent">up to</span>.
-      </h2>
-    </div>
-
-    <dl class="grid grid-cols-12 gap-4 sm:gap-6">
-      {now.map((item, i) => (
-        <div class="col-span-12 sm:col-span-6 hairline-t pt-4 flex gap-4">
-          <span class="index-num pt-1">{String(i + 1).padStart(2, '0')}</span>
-          <div>
-            <dt class="eyebrow mb-1">{item.label}</dt>
-            <dd class="font-serif text-xl text-ink-900">{item.value}</dd>
-          </div>
-        </div>
-      ))}
-    </dl>
-  </section>
-
-  {/* ======================== Stack ======================== */}
-  <section class="pb-24 reveal">
-    <div class="hairline-t pt-8 mb-8">
-      <p class="eyebrow">§ Stack</p>
-      <h2 class="display text-display-md mt-2">
-        Things I <span class="display-italic text-accent">use</span>.
-      </h2>
-    </div>
-
-    <div class="grid grid-cols-12 gap-4 sm:gap-6">
-      {stack.map((group) => (
-        <div class="col-span-12 sm:col-span-6 hairline-t pt-5">
-          <p class="eyebrow mb-3">— {group.label}</p>
-          <ul class="space-y-1 font-serif text-xl text-ink-900">
-            {group.items.map((it) => (
-              <li class="flex items-baseline gap-3">
-                <span class="font-mono text-[11px] text-ink-300">+</span>
-                <span>{it}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </div>
-  </section>
-
-  {/* ======================== Contact ======================== */}
-  <section class="pb-8 reveal">
-    <div class="hairline-t pt-10">
-      <p class="eyebrow mb-3">§ Say hi</p>
-      <h2 class="display text-display-lg mb-8">
-        Let's <span class="display-italic text-accent">talk</span>.
-      </h2>
-
-      <div class="grid grid-cols-12 gap-6">
-        <div class="col-span-12 sm:col-span-6">
-          <p class="font-serif text-xl text-ink-700 leading-relaxed max-w-md">
-            如果你也对动画、AI、或者只是想聊聊——
-            随时找我，我会很高兴。
-          </p>
-        </div>
-        <div class="col-span-12 sm:col-span-6 sm:col-start-8">
-          <ul class="space-y-3">
-            <li>
-              <a href="https://github.com/zhichengZC" target="_blank" rel="noopener"
-                 class="flex items-baseline justify-between py-3 hairline-b group">
-                <span class="font-serif text-xl text-ink-900 group-hover:text-accent transition-colors">GitHub</span>
-                <span class="font-mono text-xs text-ink-500 group-hover:text-accent transition-colors">@zhichengZC ↗</span>
-              </a>
-            </li>
-            <li>
-              <a href="/rss.xml"
-                 class="flex items-baseline justify-between py-3 hairline-b group">
-                <span class="font-serif text-xl text-ink-900 group-hover:text-accent transition-colors">RSS</span>
-                <span class="font-mono text-xs text-ink-500 group-hover:text-accent transition-colors">/rss.xml ↗</span>
-              </a>
-            </li>
-            <li>
-              <a href="mailto:hello@example.com"
-                 class="flex items-baseline justify-between py-3 hairline-b group">
-                <span class="font-serif text-xl text-ink-900 group-hover:text-accent transition-colors">Email</span>
-                <span class="font-mono text-xs text-ink-500 group-hover:text-accent transition-colors">hello@… ↗</span>
-              </a>
-            </li>
-          </ul>
-        </div>
+  {/* ======= Say hi ======= */}
+  <section class="pb-12 reveal">
+    <div class="grid grid-cols-12 gap-8 lg:gap-16">
+      <div class="col-span-12 lg:col-span-8">
+        <p class="eyebrow hairline-t pt-6 mb-6">Say hi</p>
+        <ul class="space-y-0">
+          <li>
+            <a href="https://github.com/zhichengZC" target="_blank" rel="noopener"
+               class="flex items-baseline justify-between py-4 hairline-b group">
+              <span class="font-serif text-lg text-ink-900 group-hover:text-accent-deep transition-colors">GitHub</span>
+              <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-500 group-hover:text-accent transition-all group-hover:translate-x-1">@zhichengZC ↗</span>
+            </a>
+          </li>
+          <li>
+            <a href={`${base}/rss.xml`}
+               class="flex items-baseline justify-between py-4 hairline-b group">
+              <span class="font-serif text-lg text-ink-900 group-hover:text-accent-deep transition-colors">RSS</span>
+              <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-500 group-hover:text-accent transition-all group-hover:translate-x-1">/rss.xml ↗</span>
+            </a>
+          </li>
+          <li>
+            <a href="mailto:hello@example.com"
+               class="flex items-baseline justify-between py-4 hairline-b group">
+              <span class="font-serif text-lg text-ink-900 group-hover:text-accent-deep transition-colors">Email</span>
+              <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-500 group-hover:text-accent transition-all group-hover:translate-x-1">hello@… ↗</span>
+            </a>
+          </li>
+        </ul>
       </div>
     </div>
   </section>

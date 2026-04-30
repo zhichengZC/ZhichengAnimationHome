@@ -1,46 +1,99 @@
 ---
 import { NAV_LINKS, SITE_TITLE } from '../consts';
 const { pathname } = Astro.url;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+const stripBase = (p) => p.replace(new RegExp('^' + base.replace(/[/\\^$*+?.()|[\]{}]/g, '\\$&')), '') || '/';
+const currentPath = stripBase(pathname);
 ---
 
-<header class="sticky top-0 z-40 bg-bg/80 backdrop-blur-md hairline-b">
-  <nav class="max-w-page mx-auto px-6 sm:px-10 h-16 flex items-center justify-between">
-    <a href="/" class="group flex items-center gap-2.5 select-none">
-      <span class="accent-dot"></span>
-      <span class="font-display text-[1.35rem] text-ink-900 tracking-tight leading-none">
-        {SITE_TITLE}
+<header id="siteHeader" class="sticky top-0 z-40 transition-all duration-500 ease-out">
+  <div class="header-bg absolute inset-0 -z-10 transition-all duration-500"></div>
+
+<nav class="w-full max-w-[1760px] mx-auto px-6 sm:px-10 lg:px-14 xl:px-20 h-[64px] flex items-center justify-between">
+
+    {/* Brand — simple, text only */}
+    <a href={`${base}/`} class="group flex items-baseline gap-2.5 select-none">
+      <span class="font-display text-[1.1rem] text-ink-900 tracking-tight leading-none">
+        纸橙
+      </span>
+      <span class="hidden sm:inline font-mono text-[9.5px] uppercase tracking-[0.28em] text-ink-300">
+        · 动画小屋
       </span>
     </a>
 
     <ul class="flex items-center gap-1 text-sm">
       {NAV_LINKS.map((link) => {
         const isActive = link.href === '/'
-          ? pathname === '/'
-          : pathname.startsWith(link.href);
+          ? currentPath === '/'
+          : currentPath.startsWith(link.href);
         return (
           <li>
             <a
-              href={link.href}
-              class:list={[
-                'relative inline-flex items-center px-3 py-2 transition-colors duration-300',
-                isActive ? 'text-ink-900' : 'text-ink-500 hover:text-ink-900',
-              ]}
+              href={link.href === '/' ? `${base}/` : `${base}${link.href}`}
+              class:list={['nav-link', isActive && 'is-active']}
             >
-              {isActive && <span class="accent-dot mr-2 !w-1.5 !h-1.5 !shadow-none"></span>}
               <span>{link.label}</span>
             </a>
           </li>
         );
       })}
-      <li class="ml-2 pl-3 border-l border-ink-200">
-        <a href="/rss.xml" class="text-ink-500 hover:text-accent transition-colors" aria-label="RSS">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+      <li class="ml-2 pl-3 border-l border-ink-200 flex items-center gap-3">
+        <a href={`${base}/rss.xml`} class="nav-link !p-2" aria-label="RSS">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M4 11a9 9 0 0 1 9 9"/>
             <path d="M4 4a16 16 0 0 1 16 16"/>
             <circle cx="5" cy="19" r="1"/>
           </svg>
         </a>
+
+        <button id="themeToggle" class="theme-toggle" aria-label="切换主题" title="Light / Dark">
+          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          </svg>
+          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>
+          </svg>
+        </button>
       </li>
     </ul>
   </nav>
 </header>
+
+<style>
+  #siteHeader .header-bg {
+    background: rgb(var(--bg) / 0);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom: 1px solid transparent;
+  }
+  #siteHeader.is-scrolled .header-bg {
+    background: rgb(var(--bg) / 0.82);
+    backdrop-filter: saturate(180%) blur(14px);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    border-bottom-color: rgb(var(--ink-200));
+  }
+  #siteHeader.is-scrolled nav { height: 54px; }
+</style>
+
+<script is:inline>
+  (() => {
+    const header = document.getElementById('siteHeader');
+    const onScroll = () => {
+      if (!header) return;
+      header.classList.toggle('is-scrolled', window.scrollY > 12);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    const toggle = document.getElementById('themeToggle');
+    if (!toggle) return;
+    toggle.addEventListener('click', () => {
+      const isDark = document.documentElement.classList.toggle('dark');
+      document.documentElement.classList.toggle('light', !isDark);
+      try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch (e) {}
+    });
+  })();
+</script>

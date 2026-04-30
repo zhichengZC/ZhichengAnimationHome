@@ -1,32 +1,24 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
-<BaseLayout title="Not Found" wide={true}>
-  <section class="min-h-[70vh] flex flex-col justify-center py-20">
-    <div class="flex items-center justify-between mb-12 font-mono text-[11px] uppercase tracking-widest text-ink-500">
-      <span>§ Error</span>
-      <span>Status 404</span>
-    </div>
+<BaseLayout title="Not Found" wide={false}>
+  <section class="min-h-[70vh] flex flex-col justify-center py-24">
+    <p class="eyebrow mb-10">— Error · 404</p>
 
-    <h1 class="display text-display-xl">
-      <span class="block text-ink-200">404</span>
-      <span class="block">Not <span class="display-italic text-accent">found</span>.</span>
+    <h1 class="font-display leading-[1.05] text-[clamp(2.5rem,6vw,5rem)] tracking-[-0.02em] text-ink-900 max-w-[18ch]">
+      This page <span class="display-italic text-accent">isn't here</span>.
     </h1>
 
-    <p class="mt-12 font-serif text-xl sm:text-2xl text-ink-700 max-w-lg leading-relaxed">
-      这一页被风吹走了，或者从未存在过。
-      <br />
-      但没关系，我们还有很多别的可以看。
+    <p class="mt-12 max-w-[44ch] font-serif text-lg text-ink-500 leading-[1.75]">
+      也许是走丢了，也许从未存在过。
     </p>
 
-    <div class="mt-10 flex flex-wrap gap-3">
-      <a href="/" class="btn-primary">
-        <span>返回首页</span><span aria-hidden>→</span>
-      </a>
-      <a href="/blog" class="btn-ghost">
-        <span>去读文章</span><span aria-hidden>→</span>
-      </a>
+    <div class="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-[11px] uppercase tracking-[0.22em] text-ink-500">
+      <a href={`${base}/`}     class="link"><span>Home</span><span class="link-arrow">→</span></a>
+      <span class="text-ink-300">·</span>
+      <a href={`${base}/blog`} class="link"><span>Writing</span><span class="link-arrow">→</span></a>
     </div>
   </section>
 </BaseLayout>

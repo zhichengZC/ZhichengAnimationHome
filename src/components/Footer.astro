@@ -1,63 +1,50 @@
 ---
 import { SITE_AUTHOR } from '../consts';
 const year = new Date().getFullYear();
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <footer class="mt-32 hairline-t">
-  <div class="max-w-page mx-auto px-6 sm:px-10 py-16">
-    {/* Oversized display signature */}
-    <div class="mb-14">
-      <p class="eyebrow mb-3">— Colophon</p>
-      <h3 class="display text-display-md">
-        纸橙的 <span class="display-italic text-accent">动画小屋</span>
-      </h3>
-      <p class="mt-4 max-w-md text-ink-500 text-[15px] leading-relaxed">
-        这是一间安静的小屋，记录动画与思考的温度。
-        用 Astro 与 Tailwind 慢慢搭起来的纸质空间。
-      </p>
-    </div>
+<div class="w-full max-w-[1760px] mx-auto px-6 sm:px-10 lg:px-14 xl:px-20 py-16">
 
-    {/* Info grid */}
-    <div class="grid gap-10 sm:grid-cols-12 hairline-t pt-10">
+    <div class="grid gap-10 sm:grid-cols-12">
       <div class="sm:col-span-4">
+        <p class="font-display text-lg text-ink-900 mb-1">{SITE_AUTHOR}</p>
+        <p class="text-[13px] text-ink-500 leading-relaxed max-w-[28ch]">
+          a quiet notebook for slow thoughts.
+        </p>
+      </div>
+
+      <div class="sm:col-span-3">
         <p class="eyebrow mb-3">Navigate</p>
         <ul class="space-y-1.5 text-sm">
-          <li><a href="/" class="link"><span>首页</span></a></li>
-          <li><a href="/blog" class="link"><span>文章</span></a></li>
-          <li><a href="/about" class="link"><span>关于</span></a></li>
+          <li><a href={`${base}/`}      class="link"><span>Home</span></a></li>
+          <li><a href={`${base}/blog`}  class="link"><span>Writing</span></a></li>
+          <li><a href={`${base}/about`} class="link"><span>About</span></a></li>
         </ul>
       </div>
-      <div class="sm:col-span-4">
+
+      <div class="sm:col-span-3">
         <p class="eyebrow mb-3">Elsewhere</p>
         <ul class="space-y-1.5 text-sm">
           <li><a href="https://github.com/zhichengZC" target="_blank" rel="noopener" class="link">
             <span>GitHub</span><span class="link-arrow">↗</span>
           </a></li>
-          <li><a href="/rss.xml" class="link">
+          <li><a href={`${base}/rss.xml`} class="link">
             <span>RSS</span><span class="link-arrow">↗</span>
           </a></li>
         </ul>
       </div>
-      <div class="sm:col-span-4">
-        <p class="eyebrow mb-3">Built with</p>
-        <ul class="space-y-1.5 text-sm">
-          <li><a href="https://astro.build" target="_blank" rel="noopener" class="link">
-            <span>Astro</span><span class="link-arrow">↗</span>
-          </a></li>
-          <li><a href="https://tailwindcss.com" target="_blank" rel="noopener" class="link">
-            <span>Tailwind CSS</span><span class="link-arrow">↗</span>
-          </a></li>
-          <li><a href="https://pages.github.com" target="_blank" rel="noopener" class="link">
-            <span>GitHub Pages</span><span class="link-arrow">↗</span>
-          </a></li>
-        </ul>
+
+      <div class="sm:col-span-2">
+        <p class="eyebrow mb-3">Theme</p>
+        <p class="text-sm text-ink-500">Light · Dark</p>
       </div>
     </div>
 
-    {/* Copyright strip */}
-    <div class="mt-12 pt-6 hairline-t flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 font-mono text-[11px] uppercase tracking-widest text-ink-500">
-      <p>© {year} {SITE_AUTHOR}. All rights reserved.</p>
-      <p>Made in paper · Served cold 🍊</p>
+    <div class="mt-12 pt-6 hairline-t flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-500">
+      <p>© {year} {SITE_AUTHOR}</p>
+      <p>Built with Astro &nbsp;·&nbsp; Read slowly</p>
     </div>
   </div>
 </footer>
