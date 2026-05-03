@@ -6,5 +6,6 @@ export const SITE_URL = 'https://zhichengzc.github.io';
 export const NAV_LINKS = [
   { href: '/', label: '首页' },
   { href: '/blog', label: '文章' },
+  { href: '/categories', label: '分类' },
   { href: '/about', label: '关于' },
 ];

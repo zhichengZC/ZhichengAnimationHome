@@ -1,0 +1,134 @@
+{
+  "hero": {
+    "imprint": {
+      "air": {
+        "label": "Air",
+        "value": "warm · light",
+        "icon": "pulse"
+      },
+      "sound": {
+        "label": "Sound",
+        "value": "lofi · rain",
+        "icon": "eq"
+      },
+      "tea": {
+        "label": "Tea",
+        "value": "orange · hot",
+        "icon": "none"
+      },
+      "temp": {
+        "label": "Temp",
+        "value": "18°C",
+        "icon": "none"
+      }
+    },
+    "now": {
+      "label": "Now",
+      "value": "Learning... ..."
+    },
+    "desk": {
+      "label": "Desk",
+      "value": "A small table, a warm lamp"
+    },
+    "mood": {
+      "label": "Mood",
+      "value": "quiet & curious",
+      "accent_dot": true
+    },
+    "role": {
+      "label": "Role",
+      "value": "Technical Animator · intern"
+    },
+    "chapter_num": "I",
+    "chapter_subtitle": "开篇 · overture",
+    "chapter_vol": "Vol. 01",
+    "title": "A quiet, warm\nnotebook for\nslow thoughts.",
+    "lede": "欢迎来到纸橙的动画小屋。这里记录动画、技术，以及一些值得慢下来想一想的事。"
+  },
+  "recent": {
+    "chapter_num": "II",
+    "marginalia": {
+      "quote": "The best way to find out if you can trust somebody is to trust them.",
+      "author": "E. Hemingway"
+    },
+    "listening": [
+      {
+        "num": "01",
+        "name": "Nujabes · Luv(sic)"
+      },
+      {
+        "num": "02",
+        "name": "Joe Hisaishi · Summer"
+      },
+      {
+        "num": "03",
+        "name": "silence",
+        "italic": true
+      }
+    ],
+    "reading": {
+      "title": "Character Animation with Direct3D",
+      "author": "Carl Granberg"
+    }
+  },
+  "colophon": {
+    "chapter_num": "III",
+    "typeset": "Fraunces, Noto Serif SC & Inter",
+    "written_from": "a small desk, somewhere quiet."
+  },
+  "footer": {
+    "author": "纸橙",
+    "tagline": "a quiet notebook for slow thoughts.",
+    "navigate": [
+      {
+        "label": "Home",
+        "href": "/"
+      },
+      {
+        "label": "Writing",
+        "href": "/blog"
+      },
+      {
+        "label": "Categories",
+        "href": "/categories"
+      },
+      {
+        "label": "About",
+        "href": "/about"
+      }
+    ],
+    "elsewhere": [
+      {
+        "label": "GitHub",
+        "href": "https://github.com/zhichengZC"
+      },
+      {
+        "label": "RSS",
+        "href": "/rss.xml"
+      }
+    ]
+  },
+  "about": {
+    "role": "Technical Animator · intern",
+    "based": "China · Remote",
+    "writes": "Tech & Animation",
+    "drinks": "oat latte",
+    "social": [
+      {
+        "label": "GitHub",
+        "href": "https://github.com/zhichengZC",
+        "handle": "@zhichengZC"
+      },
+      {
+        "label": "RSS",
+        "href": "/rss.xml",
+        "handle": "/rss.xml"
+      },
+      {
+        "label": "Email",
+        "href": "mailto:hello@example.com",
+        "handle": "hello@…"
+      }
+    ]
+  }
+}

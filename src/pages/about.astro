@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import siteConfig from '../data/site-config.json';
 
 const stack = [
   { label: 'Tools',    items: ['Unreal', 'Unity', 'Blender', 'Maya'] },
@@ -16,6 +17,7 @@ const now = [
 ];
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const cfg = siteConfig;
 ---
 
 <BaseLayout title="About" wide={true}>
@@ -52,19 +54,19 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           <dl class="space-y-5">
             <div class="flex items-baseline gap-5">
               <dt class="w-16 shrink-0 font-mono text-[10.5px] uppercase tracking-[0.22em] text-ink-300 pt-1">Role</dt>
-              <dd class="flex-1 font-serif text-[15px] text-ink-900">Technical Animator · intern</dd>
+              <dd class="flex-1 font-serif text-[15px] text-ink-900">{cfg.about.role}</dd>
             </div>
             <div class="flex items-baseline gap-5">
               <dt class="w-16 shrink-0 font-mono text-[10.5px] uppercase tracking-[0.22em] text-ink-300 pt-1">Based</dt>
-              <dd class="flex-1 font-serif text-[15px] text-ink-900">China · Remote</dd>
+              <dd class="flex-1 font-serif text-[15px] text-ink-900">{cfg.about.based}</dd>
             </div>
             <div class="flex items-baseline gap-5">
               <dt class="w-16 shrink-0 font-mono text-[10.5px] uppercase tracking-[0.22em] text-ink-300 pt-1">Writes</dt>
-              <dd class="flex-1 font-serif text-[15px] text-ink-900">Tech &amp; Animation</dd>
+              <dd class="flex-1 font-serif text-[15px] text-ink-900">{cfg.about.writes}</dd>
             </div>
             <div class="flex items-baseline gap-5">
               <dt class="w-16 shrink-0 font-mono text-[10.5px] uppercase tracking-[0.22em] text-ink-300 pt-1">Drinks</dt>
-              <dd class="flex-1 font-serif text-[15px] text-ink-900">oat latte</dd>
+              <dd class="flex-1 font-serif text-[15px] text-ink-900">{cfg.about.drinks}</dd>
             </div>
           </dl>
         </div>
@@ -131,27 +133,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       <div class="col-span-12 lg:col-span-8">
         <p class="eyebrow hairline-t pt-6 mb-6">Say hi</p>
         <ul class="space-y-0">
+          {cfg.about.social.map((item) => (
           <li>
-            <a href="https://github.com/zhichengZC" target="_blank" rel="noopener"
+            <a href={item.href} target="_blank" rel="noopener"
                class="flex items-baseline justify-between py-4 hairline-b group">
-              <span class="font-serif text-lg text-ink-900 group-hover:text-accent-deep transition-colors">GitHub</span>
-              <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-500 group-hover:text-accent transition-all group-hover:translate-x-1">@zhichengZC ↗</span>
+              <span class="font-serif text-lg text-ink-900 group-hover:text-accent-deep transition-colors">{item.label}</span>
+              <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-500 group-hover:text-accent transition-all group-hover:translate-x-1">{item.handle} ↗</span>
             </a>
           </li>
-          <li>
-            <a href={`${base}/rss.xml`}
-               class="flex items-baseline justify-between py-4 hairline-b group">
-              <span class="font-serif text-lg text-ink-900 group-hover:text-accent-deep transition-colors">RSS</span>
-              <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-500 group-hover:text-accent transition-all group-hover:translate-x-1">/rss.xml ↗</span>
-            </a>
-          </li>
-          <li>
-            <a href="mailto:hello@example.com"
-               class="flex items-baseline justify-between py-4 hairline-b group">
-              <span class="font-serif text-lg text-ink-900 group-hover:text-accent-deep transition-colors">Email</span>
-              <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-500 group-hover:text-accent transition-all group-hover:translate-x-1">hello@… ↗</span>
-            </a>
-          </li>
+          ))}
         </ul>
       </div>
     </div>

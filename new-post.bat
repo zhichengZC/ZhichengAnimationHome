@@ -120,9 +120,29 @@ if not exist "!target!" (
 
 echo     ✅ 创建成功！
 
-:: ---------- 7. 打开编辑器 ----------
+:: ---------- 7. 是否需要上传图片 ----------
 echo.
-echo [2/3] ✍️  正在打开编辑器...
+echo [2/4] 🖼️  是否需要上传图片？
+echo     如果文章需要配图，输入 y 会调用上传图片工具。
+echo.
+set "need_img="
+set /p "need_img=   输入 y 上传图片 / 直接回车跳过: "
+
+if /i "!need_img!"=="y" (
+    echo.
+    call upload-image.bat
+    echo.
+    echo     📋 图片已上传！在编辑器里用以下语法插入：
+    echo     ![图片说明](/images/刚才上传的文件名)
+    echo.
+    echo     💡 多张图片？再运行一次 upload-image.bat 即可。
+    echo.
+    pause
+)
+
+:: ---------- 8. 打开编辑器 ----------
+echo.
+echo [3/4] ✍️  正在打开编辑器...
 echo     写完内容后 **保存并关闭编辑器**，脚本会继续询问是否发布。
 echo.
 
@@ -135,8 +155,7 @@ if !errorlevel! equ 0 (
     notepad "!target!"
 )
 
-:: ---------- 8. 询问是否立即发布 ----------
-echo.
+:: ---------- 9. 询问是否立即发布 ----------echo.
 echo [3/3] 🚀 文章已保存。是否立即发布到 GitHub？
 echo.
 set "confirm="

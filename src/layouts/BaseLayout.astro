@@ -125,9 +125,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           let raf = 0;
           const apply = () => {
             const y = window.scrollY;
-            const max = 500;
-            const t = Math.min(1, y / max);
-            // stronger: scale 1 -> 0.72, opacity 1 -> 0.12, translateY -90, blur 0 -> 5
+            const startAt = 600; // don't start shrinking until 600px scrolled
+            const max = 1500;    // full shrink at 600+1500 = 2100px
+            const t = Math.min(1, Math.max(0, (y - startAt) / max));
+            // scale 1 -> 0.72, opacity 1 -> 0.12, translateY -90, blur 0 -> 5
             const scale   = 1 - t * 0.28;
             const opacity = 1 - t * 0.88;
             const ty      = -t * 90;

@@ -5,11 +5,14 @@ interface Props {
   post: CollectionEntry<'posts'>;
   index?: number;
 }
+const DEFAULT_CATEGORY = '其他';
 const { post, index } = Astro.props;
-const { title, description, pubDate, tags } = post.data;
+const { title, description, pubDate, tags, categories } = post.data;
+const displayCategories = categories && categories.length > 0 ? categories : [DEFAULT_CATEGORY];
 
 const rawBody = post.body || '';
 const readMin = Math.max(1, Math.round(rawBody.length / 400));
+const wordCount = rawBody.length;
 
 const y = pubDate.getFullYear();
 const m = String(pubDate.getMonth() + 1).padStart(2, '0');
@@ -21,6 +24,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <a
   href={`${base}/blog/${post.slug}/`}
   class="row-link group block py-8 hairline-b reveal post-card"
+  data-categories={displayCategories.join(',')}
+  data-tags={tags.join(',')}
 >
   <div class="grid grid-cols-12 gap-4 sm:gap-6 items-baseline relative">
 
@@ -35,7 +40,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         {y}.{m}.{d}
       </time>
       <span class="font-mono text-[11px] text-ink-300 tabular-nums sm:block hidden">
-        {readMin} min read
+        {readMin} min · {wordCount.toLocaleString()} chars
       </span>
     </div>
 
@@ -53,6 +58,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         <div class="mt-4 flex flex-wrap gap-2">
           {tags.slice(0, 4).map((t) => (
             <span class="chip-tag">— {t}</span>
+          ))}
+        </div>
+      )}
+      {displayCategories.length > 0 && (
+        <div class="mt-2 flex flex-wrap gap-2">
+          {displayCategories.slice(0, 3).map((c) => (
+            <span class:list={["chip-category", c === DEFAULT_CATEGORY && "chip-other"]}>◈ {c}</span>
           ))}
         </div>
       )}
@@ -89,5 +101,26 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   }
   .post-card:hover .chip-tag {
     color: rgb(var(--accent-deep));
+  }
+  .chip-category {
+    font-family: theme('fontFamily.mono');
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-500));
+    padding: 0.1rem 0.45rem;
+    border-radius: 4px;
+    border: 1px solid rgb(var(--jade) / 0.3);
+    background: rgb(var(--jade-soft) / 0.3);
+    transition: color 0.25s, background-color 0.25s, border-color 0.25s;
+  }
+  .post-card:hover .chip-category {
+    color: rgb(var(--jade));
+    border-color: rgb(var(--jade));
+    background: rgb(var(--jade-soft) / 0.5);
+  }
+  .chip-other {
+    opacity: 0.6;
+    border-style: dashed;
   }
 </style>

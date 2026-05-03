@@ -13,7 +13,9 @@ export async function getStaticPaths() {
 interface Props { post: CollectionEntry<'posts'>; }
 const { post } = Astro.props;
 const { Content } = await post.render();
-const { title, description, pubDate, updatedDate, tags } = post.data;
+const DEFAULT_CATEGORY = '其他';
+const { title, description, pubDate, updatedDate, tags, categories } = post.data;
+const displayCategories = categories && categories.length > 0 ? categories : [DEFAULT_CATEGORY];
 
 const rawBody = post.body || '';
 const readMin = Math.max(1, Math.round(rawBody.length / 400));
@@ -47,6 +49,16 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             <>
               {i > 0 && <span class="mx-2 text-ink-300">/</span>}
               <span>{t}</span>
+            </>
+          ))}
+        </div>
+      )}
+      {displayCategories.length > 0 && (
+        <div class="font-mono text-[11px] uppercase tracking-widest text-ink-500 mb-5">
+          {displayCategories.map((c, i) => (
+            <>
+              {i > 0 && <span class="mx-2 text-ink-300">·</span>}
+              <span class="text-jade">{c}</span>
             </>
           ))}
         </div>

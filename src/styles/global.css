@@ -609,10 +609,92 @@ html.dark .chapter-mark-hero {
   font-family: theme('fontFamily.mono');
 }
 .prose-editorial code::before, .prose-editorial code::after { content: ''; }
+/* Code blocks: Shiki dual-theme (github-light / github-dark) */
 .prose-editorial pre {
-  background: rgb(var(--ink-900));
-  border-radius: 0.5rem;
+  position: relative;
+  border-radius: 0.75rem;
   border: 1px solid rgb(var(--ink-200));
+  padding: 1.25rem 1.5rem;
+  margin-top: 1.5rem;
+  margin-bottom: 2rem;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.75;
+  background: #f6f8fa;
+  box-shadow: 0 1px 3px rgb(var(--shadow-tint) / 0.04), 0 4px 12px rgb(var(--shadow-tint) / 0.06);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.prose-editorial pre:hover {
+  box-shadow: 0 2px 6px rgb(var(--shadow-tint) / 0.06), 0 6px 20px rgb(var(--shadow-tint) / 0.10);
+}
+/* Language badge — top-right corner */
+.prose-editorial pre[data-language]::after {
+  content: attr(data-language);
+  position: absolute;
+  top: 0.4rem;
+  right: 0.75rem;
+  font-family: theme('fontFamily.mono');
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgb(var(--ink-300));
+  opacity: 0.7;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.prose-editorial pre[data-language]:hover::after {
+  opacity: 1;
+}
+.prose-editorial pre code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+}
+/* Line highlights — subtle left border on active lines */
+.prose-editorial pre .line.highlighted {
+  background: rgb(var(--accent) / 0.06);
+  margin: 0 -1.5rem;
+  padding: 0 1.5rem;
+  border-left: 3px solid rgb(var(--accent));
+}
+/* Shiki dual theme: light colors are inline, dark colors use --shiki-dark var */
+html.dark .prose-editorial pre.astro-code,
+html.dark .prose-editorial pre {
+  background-color: var(--shiki-dark-bg, #0d1117) !important;
+  border-color: rgb(var(--ink-200) / 0.4);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.15), 0 4px 12px rgb(0 0 0 / 0.2);
+}
+html.dark .prose-editorial pre.astro-code:hover,
+html.dark .prose-editorial pre:hover {
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.2), 0 6px 20px rgb(0 0 0 / 0.3);
+}
+/* Override Shiki inline colors for dark mode */
+html.dark .prose-editorial pre.astro-code,
+html.dark .prose-editorial pre.shiki {
+  color: var(--shiki-dark, #e6edf3) !important;
+}
+html.dark .prose-editorial pre.astro-code span[style],
+html.dark .prose-editorial pre.shiki span[style] {
+  color: var(--shiki-dark) !important;
+}
+html.dark .prose-editorial pre.astro-code code,
+html.dark .prose-editorial pre code {
+  color: var(--shiki-dark, #e6edf3);
+}
+html.dark .prose-editorial pre[data-language]::after {
+  color: rgb(var(--ink-300));
+}
+html.dark .prose-editorial pre .line.highlighted {
+  background: rgb(var(--accent) / 0.08);
+}
+/* Non-shiki pre fallback */
+.prose-editorial pre:not(.astro-code):not(.shiki) {
+  background: rgb(var(--bg-card));
+}
+html.dark .prose-editorial pre:not(.astro-code):not(.shiki) {
+  background: #0d1117;
+  color: #e6edf3;
 }
 .prose-editorial blockquote {
   font-style: normal;
@@ -621,6 +703,33 @@ html.dark .chapter-mark-hero {
   color: rgb(var(--ink-700));
   padding-left: 1.5rem;
   border-left-width: 3px;
+}
+/* Images: centered, rounded, with subtle shadow and caption support */
+.prose-editorial img {
+  display: block;
+  margin: 2rem auto;
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 12px -4px rgb(var(--shadow-tint) / 0.12);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+.prose-editorial img:hover {
+  box-shadow: 0 4px 20px -4px rgb(var(--shadow-tint) / 0.2);
+  transform: translateY(-2px);
+}
+.prose-editorial p img {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+/* Image with adjacent emphasis (used as caption pattern): ![alt](src) *caption* */
+.prose-editorial p + p > em:only-child {
+  display: block;
+  text-align: center;
+  font-size: 0.875rem;
+  color: rgb(var(--ink-500));
+  margin-top: -1.25rem;
+  margin-bottom: 2rem;
 }
 .prose-editorial hr { margin: 3rem auto; width: 40%; border-color: rgb(var(--ink-200)); }
 

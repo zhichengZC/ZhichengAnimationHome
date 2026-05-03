@@ -109,11 +109,14 @@ echo =========================================
 echo    ✅ 推送成功！
 echo =========================================
 echo.
-echo  🌐 Vercel/Netlify 会在 1-2 分钟内自动部署，
-echo     稍等片刻刷新你的网站即可看到最新内容。
+echo  🌐 GitHub Actions 会自动执行构建和部署，
+echo     大约 1-3 分钟后网站会更新完成。
 echo.
-echo  📊 查看部署进度：
-echo     Vercel  → https://vercel.com/dashboard
-echo     Netlify → https://app.netlify.com/
+echo  📊 查看部署进度（Actions 标签页）：
+echo     打开你的 GitHub 仓库页面 → 点顶部的 "Actions" 标签
+echo     看到绿色对勾 ✓ 就说明部署完成啦。
+echo.
+echo  🔗 你的网站地址：
+echo     https://（你的GitHub用户名）.github.io/（仓库名）/
 echo.
 pause

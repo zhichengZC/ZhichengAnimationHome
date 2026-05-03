@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PostCard from '../../components/PostCard.astro';
 import { getCollection } from 'astro:content';
 
+const DEFAULT_CATEGORY = '其他';
 const posts = (await getCollection('posts', ({ data }) => !data.draft))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
@@ -13,6 +14,42 @@ const grouped = posts.reduce((acc, p) => {
 }, {} as Record<number, typeof posts>);
 const years = Object.keys(grouped).map(Number).sort((a, b) => b - a);
 const allTags = Array.from(new Set(posts.flatMap((p) => p.data.tags))).sort();
+
+// Categories: uncategorized posts fall into "其他"
+const allCategories = Array.from(new Set(posts.flatMap((p) =>
+  p.data.categories && p.data.categories.length > 0 ? p.data.categories : [DEFAULT_CATEGORY]
+))).sort((a, b) => {
+  if (a === DEFAULT_CATEGORY) return 1;
+  if (b === DEFAULT_CATEGORY) return -1;
+  return a.localeCompare(b);
+});
+
+// Filtering logic: support both query param (?tag=xxx or ?category=xxx) and hash (#tag-xxx or #category-xxx)
+const url = new URL(Astro.request.url);
+const filterTag = url.searchParams.get('tag') || '';
+const filterCategory = url.searchParams.get('category') || '';
+
+// Filter posts based on selected tag and/or category
+let filteredPosts = posts;
+if (filterTag) {
+  filteredPosts = filteredPosts.filter((p) => p.data.tags.includes(filterTag));
+}
+if (filterCategory) {
+  if (filterCategory === DEFAULT_CATEGORY) {
+    // "其他" = posts with no categories
+    filteredPosts = filteredPosts.filter((p) => !p.data.categories || p.data.categories.length === 0);
+  } else {
+    filteredPosts = filteredPosts.filter((p) => p.data.categories && p.data.categories.includes(filterCategory));
+  }
+}
+
+// Re-group filtered posts by year
+const filteredGrouped = filteredPosts.reduce((acc, p) => {
+  const y = p.data.pubDate.getFullYear();
+  (acc[y] ||= []).push(p);
+  return acc;
+}, {} as Record<number, typeof filteredPosts>);
+const filteredYears = Object.keys(filteredGrouped).map(Number).sort((a, b) => b - a);
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
@@ -40,14 +77,18 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       </div>
 
       <aside class="col-span-12 lg:col-span-4 lg:pt-4 space-y-8">
-        <div class="hairline-t pt-4 grid grid-cols-3 gap-2 font-mono text-[10.5px] uppercase tracking-[0.18em]">
+        <div class="hairline-t pt-4 grid grid-cols-4 gap-2 font-mono text-[10.5px] uppercase tracking-[0.18em]">
           <div>
             <p class="text-ink-300">Entries</p>
-            <p class="mt-1 font-display text-2xl tabular-nums text-ink-900 tracking-tight">{String(posts.length).padStart(2,'0')}</p>
+            <p class="mt-1 font-display text-2xl tabular-nums text-ink-900 tracking-tight">{String(filteredPosts.length).padStart(2,'0')}</p>
           </div>
           <div>
             <p class="text-ink-300">Topics</p>
             <p class="mt-1 font-display text-2xl tabular-nums text-ink-900 tracking-tight">{String(allTags.length).padStart(2,'0')}</p>
+          </div>
+          <div>
+            <p class="text-ink-300">Categories</p>
+            <p class="mt-1 font-display text-2xl tabular-nums text-ink-900 tracking-tight">{String(allCategories.length).padStart(2,'0')}</p>
           </div>
           <div>
             <p class="text-ink-300">Years</p>
@@ -55,39 +96,68 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           </div>
         </div>
 
+        {/* Category filter chips */}
+        {allCategories.length > 0 && (
+          <div class="hairline-t pt-4">
+            <p class="eyebrow mb-3">Categories</p>
+            <div class="flex flex-wrap gap-x-4 gap-y-1.5 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-500">
+              {(filterCategory ? [{c: '', label: 'All'}] : []).concat(allCategories.map((c) => ({c, label: c}))).map(({c, label}) => (
+                <a href={c ? `${base}/blog?category=${encodeURIComponent(c)}` : `${base}/blog`}
+                   class:list={['link', filterCategory === c && 'text-accent-deep']}>
+                  <span>{label || 'All'}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tag filter chips */}
         {allTags.length > 0 && (
           <div class="hairline-t pt-4">
             <p class="eyebrow mb-3">Topics</p>
             <div class="flex flex-wrap gap-x-4 gap-y-1.5 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-500">
-              {allTags.map((t) => (
-                <a href={`#tag-${t}`} class="link"><span>{t}</span></a>
+              {(filterTag ? [{t: '', label: 'All'}] : []).concat(allTags.map((t) => ({t, label: t}))).map(({t, label}) => (
+                <a href={t ? `${base}/blog?tag=${encodeURIComponent(t)}${filterCategory ? '&category=' + encodeURIComponent(filterCategory) : ''}` : `${base}/blog${filterCategory ? '?category=' + encodeURIComponent(filterCategory) : ''}`}
+                   class:list={['link', filterTag === t && 'text-accent-deep']}>
+                  <span>{label || 'All'}</span>
+                </a>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Active filter indicator */}
+        {(filterTag || filterCategory) && (
+          <div class="hairline-t pt-4">
+            <a href={`${base}/blog`}
+               class="link text-accent text-sm">
+              <span>✕ Clear filter</span>
+            </a>
           </div>
         )}
       </aside>
     </div>
   </section>
 
-  {posts.length === 0 ? (
+  {filteredPosts.length === 0 ? (
     <div class="py-20 hairline-t">
       <p class="font-serif text-lg text-ink-500">
-        还没有文章 · <span class="display-italic">nothing yet</span>
+        没有匹配的文章 · <span class="display-italic">no matching entries</span>
       </p>
     </div>
   ) : (
     <div class="grid grid-cols-12 gap-8 lg:gap-16">
       <div class="col-span-12 lg:col-span-8 space-y-16">
-        {years.map((year) => (
-          <section>
+        {filteredYears.map((year) => (
+          <section data-year={year}>
             <div class="flex items-baseline justify-between mb-2 reveal hairline-t pt-6">
               <h2 class="font-display text-4xl sm:text-5xl text-ink-900 leading-none">{year}</h2>
               <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-500">
-                {grouped[year].length} {grouped[year].length > 1 ? 'entries' : 'entry'}
+                {filteredGrouped[year].length} {filteredGrouped[year].length > 1 ? 'entries' : 'entry'}
               </span>
             </div>
             <div>
-              {grouped[year].map((post, i) => (
+              {filteredGrouped[year].map((post, i) => (
                 <PostCard post={post} index={i + 1} />
               ))}
             </div>
@@ -97,4 +167,95 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       <aside class="hidden lg:block col-span-4"></aside>
     </div>
   )}
+  {/* Client-side category/tag filtering for static deployment */}
+  <script is:inline>
+  (() => {
+    const DEFAULT_CATEGORY = '其他';
+    const params = new URLSearchParams(window.location.search);
+    const filterCategory = params.get('category') || '';
+    const filterTag = params.get('tag') || '';
+
+    if (!filterCategory && !filterTag) return;
+
+    // Update the title to show active filter
+    const h1 = document.querySelector('h1');
+    if (h1 && filterCategory) {
+      const categoryLabel = decodeURIComponent(filterCategory);
+      h1.innerHTML = 'Category: <span class="display-italic text-accent">' + categoryLabel + '</span>';
+    }
+    if (h1 && filterTag) {
+      const tagLabel = decodeURIComponent(filterTag);
+      h1.innerHTML = 'Topic: <span class="display-italic text-accent">' + tagLabel + '</span>';
+    }
+
+    // Filter post cards
+    const cards = document.querySelectorAll('.post-card[data-categories]');
+    let visibleCount = 0;
+    cards.forEach(card => {
+      const cardCats = (card.getAttribute('data-categories') || '').split(',');
+      const cardTags = (card.getAttribute('data-tags') || '').split(',');
+
+      let catMatch = true;
+      let tagMatch = true;
+
+      if (filterCategory) {
+        if (filterCategory === DEFAULT_CATEGORY) {
+          catMatch = cardCats.length === 1 && cardCats[0] === DEFAULT_CATEGORY;
+          // Also match if card has no categories attribute or empty
+          if (!card.getAttribute('data-categories') || card.getAttribute('data-categories') === '') {
+            catMatch = true;
+          }
+        } else {
+          catMatch = cardCats.includes(filterCategory);
+        }
+      }
+
+      if (filterTag) {
+        tagMatch = cardTags.includes(filterTag);
+      }
+
+      if (catMatch && tagMatch) {
+        card.style.display = '';
+        visibleCount++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    // Hide year sections that have no visible posts
+    document.querySelectorAll('[data-year]').forEach(section => {
+      const visibleCards = section.querySelectorAll('.post-card:not([style*="display: none"])');
+      if (visibleCards.length === 0) {
+        section.style.display = 'none';
+      } else {
+        // Update entry count
+        const countSpan = section.querySelector('.font-mono.text-\\[11px\\]');
+        if (countSpan) {
+          countSpan.textContent = visibleCards.length + (visibleCards.length > 1 ? ' entries' : ' entry');
+        }
+      }
+    });
+
+    // Update sidebar counters
+    const entryCounter = document.querySelector('.tabular-nums');
+    // Update the "Entries" count in sidebar
+    const statDivs = document.querySelectorAll('.grid.grid-cols-4 > div');
+    if (statDivs.length > 0) {
+      const entriesP = statDivs[0].querySelector('.font-display');
+      if (entriesP) {
+        entriesP.textContent = String(visibleCount).padStart(2, '0');
+      }
+    }
+
+    // Highlight active category chip
+    if (filterCategory) {
+      document.querySelectorAll('.hairline-t a[href*="category="]').forEach(a => {
+        const href = a.getAttribute('href') || '';
+        if (href.includes('category=' + encodeURIComponent(filterCategory))) {
+          a.classList.add('text-accent-deep');
+        }
+      });
+    }
+  })();
+  </script>
 </BaseLayout>

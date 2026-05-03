@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PostCard from '../components/PostCard.astro';
 import { getCollection } from 'astro:content';
+import siteConfig from '../data/site-config.json';
 
 const allPosts = (await getCollection('posts', ({ data }) => !data.draft))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
@@ -17,6 +18,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const currentDate = new Date().toLocaleDateString('en-US', {
   year: 'numeric', month: 'short', day: '2-digit',
 });
+
+const cfg = siteConfig;
 ---
 
 <BaseLayout wide={true}>
@@ -27,9 +30,9 @@ const currentDate = new Date().toLocaleDateString('en-US', {
 
       {/* Eyebrow row — runs across the full width */}
       <div class="flex items-center gap-3 mb-6 relative">
-        <span class="font-mono text-[10.5px] uppercase tracking-[0.24em] text-ink-500">Chapter I &nbsp;·&nbsp; — 开篇 · overture</span>
+        <span class="font-mono text-[10.5px] uppercase tracking-[0.24em] text-ink-500">Chapter {cfg.hero.chapter_num} &nbsp;·&nbsp; — {cfg.hero.chapter_subtitle} · overture</span>
         <span class="h-px flex-1 max-w-[120px] bg-ink-200"></span>
-        <span class="font-mono text-[10.5px] uppercase tracking-[0.24em] text-ink-300">№ 01 &nbsp;·&nbsp; Vol. 01</span>
+        <span class="font-mono text-[10.5px] uppercase tracking-[0.24em] text-ink-300">№ 01 &nbsp;·&nbsp; {cfg.hero.chapter_vol}</span>
         <span class="h-px flex-1 bg-ink-200"></span>
         <span class="deco-star spin text-sm">✻</span>
         <span class="font-mono text-[10.5px] uppercase tracking-[0.24em] text-ink-500">{currentDate}</span>
@@ -37,16 +40,14 @@ const currentDate = new Date().toLocaleDateString('en-US', {
 
       {/* Giant chapter mark I — sits at the top-left margin of the hero,
          mirrors the II/III marks that live in each section's top-right corner. */}
-      <span class="chapter-mark-hero pointer-events-none select-none" aria-hidden="true">I</span>
+      <span class="chapter-mark-hero pointer-events-none select-none" aria-hidden="true">{cfg.hero.chapter_num}</span>
 
       {/* Title + right-side editorial module — side by side, 8/4 split */}
       <div class="grid grid-cols-12 gap-8 lg:gap-10 items-start">
 
         <h1 class="display display-poster col-span-12 lg:col-span-8 leading-[0.92] text-ink-900
                    text-[clamp(2.75rem,8.4vw,8.5rem)] tracking-[-0.018em] -ml-[0.03em]">
-          A quiet, warm
-          <br/>notebook for
-          <br/><span class="display-italic">slow</span> thoughts<span class="text-accent">.</span>
+          {cfg.hero.title}
         </h1>
 
         {/* Right-side editorial module — stamp / ruler / today's imprint */}
@@ -95,36 +96,23 @@ const currentDate = new Date().toLocaleDateString('en-US', {
 
             {/* Today's imprint — four micro-metrics */}
             <dl class="mt-8 space-y-3 font-mono text-[11px] uppercase tracking-[0.18em]">
+              {Object.entries(cfg.hero.imprint).map(([key, item]) => (
               <div class="flex items-baseline gap-4">
-                <dt class="w-14 text-ink-300 shrink-0">Air</dt>
+                <dt class="w-14 text-ink-300 shrink-0">{(item as any).label}</dt>
                 <dd class="text-ink-700 flex items-center gap-2">
-                  <span class="inline-block w-2 h-2 rounded-full bg-accent/70 animate-pulse"></span>
-                  warm · light
+                  {(item as any).icon === 'pulse' && <span class="inline-block w-2 h-2 rounded-full bg-accent/70 animate-pulse"></span>}
+                  {(item as any).icon === 'eq' && (
+                    <span class="flex items-end gap-[2px] h-3 mr-1">
+                      <span class="w-[2px] h-2 bg-accent/70 eq-bar"></span>
+                      <span class="w-[2px] h-3 bg-accent/80 eq-bar" style="animation-delay: 0.15s"></span>
+                      <span class="w-[2px] h-1.5 bg-accent/60 eq-bar" style="animation-delay: 0.3s"></span>
+                      <span class="w-[2px] h-2.5 bg-accent/70 eq-bar" style="animation-delay: 0.45s"></span>
+                    </span>
+                  )}
+                  {(item as any).value}
                 </dd>
               </div>
-              <div class="flex items-baseline gap-4">
-                <dt class="w-14 text-ink-300 shrink-0">Sound</dt>
-                <dd class="text-ink-700 flex items-center gap-1.5">
-                  <span class="flex items-end gap-[2px] h-3 mr-1">
-                    <span class="w-[2px] h-2 bg-accent/70 eq-bar"></span>
-                    <span class="w-[2px] h-3 bg-accent/80 eq-bar" style="animation-delay: 0.15s"></span>
-                    <span class="w-[2px] h-1.5 bg-accent/60 eq-bar" style="animation-delay: 0.3s"></span>
-                    <span class="w-[2px] h-2.5 bg-accent/70 eq-bar" style="animation-delay: 0.45s"></span>
-                  </span>
-                  lofi · rain
-                </dd>
-              </div>
-              <div class="flex items-baseline gap-4">
-                <dt class="w-14 text-ink-300 shrink-0">Tea</dt>
-                <dd class="text-ink-700">orange · hot</dd>
-              </div>
-              <div class="flex items-baseline gap-4">
-                <dt class="w-14 text-ink-300 shrink-0">Temp</dt>
-                <dd class="text-ink-700 tabular-nums">
-                  <span class="font-display text-lg text-ink-900 normal-case tracking-normal">18°C</span>
-                </dd>
-              </div>
-            </dl>
+              ))}
 
             {/* Decorative asterisk and cross-hair */}
             <div class="mt-8 flex items-center justify-between text-ink-300">
@@ -171,33 +159,16 @@ const currentDate = new Date().toLocaleDateString('en-US', {
 
       {/* Meta row — 4 cells across the page width */}
       <div class="mt-12 grid grid-cols-12 gap-6 hairline-t pt-6">
+        {[cfg.hero.now, cfg.hero.desk, cfg.hero.mood, cfg.hero.role].map((item) => (
         <div class="col-span-6 sm:col-span-3">
-          <p class="eyebrow mb-2">Now</p>
+          <p class="eyebrow mb-2">{(item as any).label}</p>
           <p class="font-serif text-[16px] leading-[1.6] text-ink-900">
-            学 Transformer &amp; Motion Matching
-            <span class="text-ink-500"> 的底层原理。</span>
+            {(item as any).accent_dot && <span class="inline-block w-1.5 h-1.5 rounded-full bg-accent translate-y-[-2px]"></span>}
+            {(item as any).value}
+            {(item as any).suffix && <span class="text-ink-500">{(item as any).suffix}</span>}
           </p>
         </div>
-        <div class="col-span-6 sm:col-span-3">
-          <p class="eyebrow mb-2">Desk</p>
-          <p class="font-serif text-[16px] leading-[1.6] text-ink-900">
-            一张小桌，一盏暖灯
-          </p>
-        </div>
-        <div class="col-span-6 sm:col-span-3">
-          <p class="eyebrow mb-2">Mood</p>
-          <p class="font-serif text-[16px] leading-[1.6] text-ink-900 flex items-baseline gap-2">
-            <span class="inline-block w-1.5 h-1.5 rounded-full bg-accent translate-y-[-2px]"></span>
-            quiet &amp; curious
-          </p>
-        </div>
-        <div class="col-span-6 sm:col-span-3">
-          <p class="eyebrow mb-2">Role</p>
-          <p class="font-serif text-[16px] leading-[1.6] text-ink-900">
-            Technical Animator
-            <span class="text-ink-500"> · intern</span>
-          </p>
-        </div>
+        ))}
       </div>
 
       {/* Stats + signature row */}
@@ -243,7 +214,7 @@ const currentDate = new Date().toLocaleDateString('en-US', {
         <span class="chapter-mark-right pointer-events-none" aria-hidden="true">II</span>
 
         <div class="flex items-baseline gap-4">
-          <span class="deco-page-num">Chapter II</span>
+        <span class="deco-page-num">Chapter {cfg.recent.chapter_num}</span>
           <span class="h-px flex-1 bg-ink-200"></span>
           <span class="deco-star spin text-[13px] text-ink-300">✻</span>
           <span class="deco-page-num">最近 · recent</span>
@@ -287,36 +258,31 @@ const currentDate = new Date().toLocaleDateString('en-US', {
           <div class="hairline-t pt-4">
             <p class="eyebrow mb-3">Marginalia</p>
             <p class="font-serif text-[16px] leading-[1.75] text-ink-700">
-              "The best way to find out if you can trust somebody is to trust them."
+              "{cfg.recent.marginalia.quote}"
             </p>
             <p class="mt-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-300">
-              — E. Hemingway
+              — {cfg.recent.marginalia.author}
             </p>
           </div>
 
           <div class="hairline-t pt-4">
             <p class="eyebrow mb-3">Listening</p>
             <ul class="space-y-1.5 font-serif text-[16px] text-ink-900">
+              {cfg.recent.listening.map((item) => (
               <li class="flex items-baseline gap-3">
-                <span class="font-mono text-[10px] text-ink-300">01</span>
-                <span>Nujabes · Luv(sic)</span>
+                <span class="font-mono text-[10px] text-ink-300">{(item as any).num}</span>
+                <span>{(item as any).name}</span>
+                {(item as any).italic && <span class="text-ink-500 italic">{(item as any).italic}</span>}
               </li>
-              <li class="flex items-baseline gap-3">
-                <span class="font-mono text-[10px] text-ink-300">02</span>
-                <span>Joe Hisaishi · Summer</span>
-              </li>
-              <li class="flex items-baseline gap-3">
-                <span class="font-mono text-[10px] text-ink-300">03</span>
-                <span class="text-ink-500 italic">silence</span>
-              </li>
+              ))}
             </ul>
           </div>
 
           <div class="hairline-t pt-4">
             <p class="eyebrow mb-3">Reading</p>
             <p class="font-serif text-[16px] leading-[1.75] text-ink-700">
-              Character Animation with Direct3D<br/>
-              <span class="text-ink-500">by Carl Granberg</span>
+              {cfg.recent.reading.title}<br/>
+              <span class="text-ink-500">by {cfg.recent.reading.author}</span>
             </p>
           </div>
         </aside>
@@ -332,7 +298,7 @@ const currentDate = new Date().toLocaleDateString('en-US', {
         <span class="chapter-mark-right pointer-events-none" aria-hidden="true">III</span>
 
         <div class="flex items-baseline gap-4">
-          <span class="deco-page-num">Chapter III</span>
+          <span class="deco-page-num">Chapter {cfg.colophon.chapter_num}</span>
           <span class="h-px flex-1 bg-ink-200"></span>
           <span class="deco-page-num">终 · colophon</span>
         </div>
@@ -345,8 +311,8 @@ const currentDate = new Date().toLocaleDateString('en-US', {
             Colophon
           </p>
           <p class="font-serif text-[16px] text-ink-700 leading-[1.75] max-w-[42ch]">
-            Typeset in Fraunces, Noto Serif SC &amp; Inter.
-            Written from a small desk, somewhere quiet.
+            Typeset in {cfg.colophon.typeset}.
+            <br/>Written from {cfg.colophon.written_from}.
           </p>
         </div>
         <div class="col-span-12 sm:col-span-6 sm:text-right">

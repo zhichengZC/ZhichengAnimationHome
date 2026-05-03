@@ -1,38 +1,38 @@
 ---
-import { SITE_AUTHOR } from '../consts';
+import siteConfig from '../data/site-config.json';
 const year = new Date().getFullYear();
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const cfg = siteConfig;
 ---
 
 <footer class="mt-32 hairline-t">
-<div class="w-full max-w-[1760px] mx-auto px-6 sm:px-10 lg:px-14 xl:px-20 py-16">
+  <div class="w-full max-w-[1760px] mx-auto px-6 sm:px-10 lg:px-14 xl:px-20 py-16">
 
     <div class="grid gap-10 sm:grid-cols-12">
       <div class="sm:col-span-4">
-        <p class="font-display text-lg text-ink-900 mb-1">{SITE_AUTHOR}</p>
+        <p class="font-display text-lg text-ink-900 mb-1">{cfg.footer.author}</p>
         <p class="text-[13px] text-ink-500 leading-relaxed max-w-[28ch]">
-          a quiet notebook for slow thoughts.
+          {cfg.footer.tagline}
         </p>
       </div>
 
       <div class="sm:col-span-3">
         <p class="eyebrow mb-3">Navigate</p>
         <ul class="space-y-1.5 text-sm">
-          <li><a href={`${base}/`}      class="link"><span>Home</span></a></li>
-          <li><a href={`${base}/blog`}  class="link"><span>Writing</span></a></li>
-          <li><a href={`${base}/about`} class="link"><span>About</span></a></li>
+          {cfg.footer.navigate.map((item) => (
+            <li><a href={`${base}${item.href}`} class="link"><span>{item.label}</span></a></li>
+          ))}
         </ul>
       </div>
 
       <div class="sm:col-span-3">
         <p class="eyebrow mb-3">Elsewhere</p>
         <ul class="space-y-1.5 text-sm">
-          <li><a href="https://github.com/zhichengZC" target="_blank" rel="noopener" class="link">
-            <span>GitHub</span><span class="link-arrow">↗</span>
-          </a></li>
-          <li><a href={`${base}/rss.xml`} class="link">
-            <span>RSS</span><span class="link-arrow">↗</span>
-          </a></li>
+          {cfg.footer.elsewhere.map((item) => (
+            <li><a href={item.href} target="_blank" rel="noopener" class="link">
+              <span>{item.label}</span><span class="link-arrow">↗</span>
+            </a></li>
+          ))}
         </ul>
       </div>
 
@@ -43,7 +43,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     </div>
 
     <div class="mt-12 pt-6 hairline-t flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-500">
-      <p>© {year} {SITE_AUTHOR}</p>
+      <p>© {year} {cfg.footer.author}</p>
       <p>Built with Astro &nbsp;·&nbsp; Read slowly</p>
     </div>
   </div>
